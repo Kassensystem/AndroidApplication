@@ -1,5 +1,6 @@
 package dhbw.sa.kassensystemapplication;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.os.AsyncTask;
@@ -14,7 +15,12 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import org.joda.time.DateTime;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
@@ -22,10 +28,15 @@ import java.util.ArrayList;
 
 import dhbw.sa.kassensystemapplication.entity.Item;
 import dhbw.sa.kassensystemapplication.entity.Order;
-import dhbw.sa.kassensystemapplication.entity.Table;
 
-import static dhbw.sa.kassensystemapplication.MainActivity.ip;
+import static dhbw.sa.kassensystemapplication.MainActivity.url;
 
+/**
+ * TODO Shared Preferences für Speichern von Daten
+ *
+ * @author Dani Schifano
+ * @author Marvin Mai
+ */
 public class ItemSelection extends AppCompatActivity {
 
     Display mdisp;
@@ -34,9 +45,11 @@ public class ItemSelection extends AppCompatActivity {
     private Button orderbtn;
     private Button paidbtn;
     private double speicher;
-    private ArrayList<Item> orderItems = new ArrayList<Item>();
+    private ArrayList<Item> orderItems = new ArrayList<>();
     public static double price = 0;
     public static int tableID = 0;
+    public int updatableOrderID = 0;
+    public boolean orderIsPaid = false;
 
 
     @Override
@@ -44,15 +57,12 @@ public class ItemSelection extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_item_selection);
 
+
+
         //get table from main
         Bundle extras = getIntent().getExtras();
         if(extras != null)
             tableID = Integer.parseInt(extras.getString("tableID"));
-
-        /*
-         *  TODO Überprüfen, ob mit diesem Tisch eine nicht-bezahlte Order existiert
-         *  TODO Wenn ja, den Inhalt dieser Order darstellen (entsprechend die dargestellten Inhalte anpassen)
-         */
 
 
         mdisp = getWindowManager().getDefaultDisplay();
@@ -80,7 +90,7 @@ public class ItemSelection extends AppCompatActivity {
 
                 // deklaration of the TextView for the Items and the Buttons (+ and -)
                 final TextView txt = new TextView(this);
-                final TextView quantity = new TextView(this);
+                final TextView quantityTextField = new TextView(this);
                 Button plus = new Button(this);
                 Button minus = new Button(this);
 
@@ -92,14 +102,14 @@ public class ItemSelection extends AppCompatActivity {
                 txt.setPadding(pix, pix, pix, pix);
                 rl.addView(txt);
 
-                // Params for the TextView quantity
-                quantity.setLayoutParams(new LinearLayout.LayoutParams(8 * pix, 10 * pix));
-                quantity.setId(i);
-                quantity.setText("0");
-                quantity.setX(maxX - (15 * pix));
-                quantity.setY(posY);
-                quantity.setPadding(pix, pix, pix, pix);
-                rl.addView(quantity);
+                // Params for the TextView quantityTextField
+                quantityTextField.setLayoutParams(new LinearLayout.LayoutParams(8 * pix, 10 * pix));
+                quantityTextField.setId(i);
+                quantityTextField.setText("0");
+                quantityTextField.setX(maxX - (15 * pix));
+                quantityTextField.setY(posY);
+                quantityTextField.setPadding(pix, pix, pix, pix);
+                rl.addView(quantityTextField);
 
                 // Params for the Button: +
                 plus.setLayoutParams(new LinearLayout.LayoutParams(4 * pix, 4 * pix));
@@ -117,7 +127,7 @@ public class ItemSelection extends AppCompatActivity {
                 minus.setY(posY);
                 rl.addView(minus);
 
-                //The Y-position need to crow with the quantity of Items!
+                //The Y-position need to crow with the quantityTextField of Items!
                 posY = posY + 5 * pix;
 
                 //Listener for the Button: +
@@ -126,7 +136,7 @@ public class ItemSelection extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
 
-                        String selectedQuantity = (String) quantity.getText();
+                        String selectedQuantity = (String) quantityTextField.getText();
 
                         int number = Integer.parseInt(selectedQuantity);
                         number++;
@@ -148,7 +158,7 @@ public class ItemSelection extends AppCompatActivity {
 
                         selectedQuantity = Integer.toString(number);
 
-                        quantity.setText(selectedQuantity);
+                        quantityTextField.setText(selectedQuantity);
                         sum.setText(Double.toString(speicher) + " €");
                         //price = Double.parseDouble(sum.getText().toString());
                         price = speicher;
@@ -162,7 +172,7 @@ public class ItemSelection extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
 
-                        String numberAsString = (String) quantity.getText();
+                        String numberAsString = (String) quantityTextField.getText();
 
                         int number = Integer.parseInt(numberAsString);
 
@@ -186,7 +196,7 @@ public class ItemSelection extends AppCompatActivity {
 
                         numberAsString = Integer.toString(number);
 
-                        quantity.setText(numberAsString);
+                        quantityTextField.setText(numberAsString);
                         sum.setText(Double.toString(speicher) + " €");
 
                     }
@@ -204,7 +214,14 @@ public class ItemSelection extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
+            // TODO create oder update
+            orderIsPaid = false;
+            if(updatableOrderID == 0)
                 new CreatNewOrder().execute();
+            else
+                new UpdateOrder().execute();
+
+                showMainActivity();
 
             }
         });
@@ -212,11 +229,31 @@ public class ItemSelection extends AppCompatActivity {
         paidbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+            orderIsPaid = true;
+            // TODO create order update
+                if(updatableOrderID == 0)
+                    new CreatNewOrder().execute();
+                else
+                    new UpdateOrder().execute();
 
-                // TODO
-
+                showMainActivity();
             }
         });
+    }
+
+    private void showMainActivity() {
+        Intent intent = new Intent(ItemSelection.this, MainActivity.class);
+
+        startActivity(intent);
+    }
+
+    private void refreshDisplayedItems(Order order) {
+
+        ArrayList<Integer> itemIDs = Order.splitItemIDString(order.getItems());
+        for(Integer i: itemIDs) {
+            // TODO aktualisieren der ausgewählten Items der order
+
+        }
 
     }
 
@@ -236,12 +273,11 @@ public class ItemSelection extends AppCompatActivity {
                 System.out.println(price);
                 DateTime date = DateTime.now();
                 System.out.println(date.toString());
-                boolean paid = false;
-                Order order = new Order(itemIDs, tableID, price, paid);
+                Order order = new Order(itemIDs, tableID, price, orderIsPaid);
 
                 //Order übertragen
                 // TODO Das Datum kann nicht übertragen werden. Wird momentan auf controllerseite erzeugt.
-                restTemplate.postForLocation(ip + "/order/", order, Order.class);
+                restTemplate.postForLocation(url + "/order/", order, Order.class);
 
             }catch (Exception e){
                 e.printStackTrace();
@@ -251,33 +287,74 @@ public class ItemSelection extends AppCompatActivity {
 
     }
 
-    private class GetAllOrders extends AsyncTask<Void,Void,Order[]> {
+    private class UpdateOrder extends AsyncTask<Void, Void, Void> {
 
         @Override
-        protected Order[] doInBackground(Void... params) {
-            try {
-                RestTemplate restTemplate = new RestTemplate();
-                restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-                Order[] orders = restTemplate.getForObject(ip+"/order",Order[].class);
-                return orders;
-            }catch (Exception e){
+        protected Void doInBackground(Void... params) {
 
+            RestTemplate restTemplate = new RestTemplate();
+
+            try {
+                String itemIDs = Order.joinIDsIntoString(orderItems);
+                System.out.println(itemIDs);
+                int tableID = ItemSelection.tableID;
+                System.out.println(tableID);
+                double price = ItemSelection.price;
+                System.out.println(price);
+                DateTime date = DateTime.now();
+                System.out.println(date.toString());
+                System.out.println("---------------------------------\n" + orderIsPaid);
+                Order order = new Order(updatableOrderID, itemIDs, tableID, price, null, orderIsPaid);
+
+                //Order übertragen
+                // TODO Das Datum kann nicht übertragen werden. Wird momentan auf controllerseite erzeugt.
+                restTemplate.put(url + "/order/" + order.getOrderID(), order);
+
+            }catch (Exception e){
+                e.printStackTrace();
             }
             return null;
         }
 
-        protected void onPostExecute( Order[] orders) {
-            super.onPostExecute(orders);
+    }
 
-            for(Order o:orders){
-               // o.getItemIDs();
+    private class GetAllOrders extends AsyncTask<Void,Void,ArrayList<Order>> {
+
+        @Override
+        protected ArrayList<Order> doInBackground(Void... params) {
+            try {
+                RestTemplate restTemplate = new RestTemplate();
+
+                restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+                ResponseEntity<ArrayList<Order>> responseEntity =
+                        restTemplate.exchange
+                                (url + "/orders", HttpMethod.GET,
+                                        null, new ParameterizedTypeReference<ArrayList<Order>>() {});
+                ArrayList<Order> allOrders = responseEntity.getBody();
+
+                return allOrders;
+
+            }catch (Exception e){
+                e.printStackTrace();
             }
-
-
-
+            return null;
         }
 
+        protected void onPostExecute( ArrayList<Order> allOrders) {
+            super.onPostExecute(allOrders);
 
+            for(Order o: allOrders){
+                System.out.println(o.getItems());
+                if(!o.isPaid() && o.getTable() == tableID) {
+                    refreshDisplayedItems(o);
+                    updatableOrderID = o.getOrderID();
+                }
+            }
+            /*
+         *  TODO Überprüfen, ob mit diesem Tisch eine nicht-bezahlte Order existiert
+         *  TODO Wenn ja, den Inhalt dieser Order darstellen (entsprechend die dargestellten Inhalte anpassen)
+         */
+        }
     }
 
 

@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Kassensystem_Application.iml" filepath="$PROJECT_DIR$/Kassensystem_Application.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://C:\Users\marvi\AndroidStudioProjects\Kassensystem_Application\kassensystem_database\kassensystem_database.iml" filepath="C:\Users\marvi\AndroidStudioProjects\Kassensystem_Application\kassensystem_database\kassensystem_database.iml" />
     </modules>
   </component>
 </project>

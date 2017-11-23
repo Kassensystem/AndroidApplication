@@ -1,6 +1,7 @@
 package dhbw.sa.kassensystemapplication.entity;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.joda.time.DateTime;
 
@@ -11,6 +12,7 @@ import java.util.ArrayList;
  *
  * @author Marvin Mai
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Order {
     @JsonProperty private int orderID;
     @JsonProperty private String itemIDs;

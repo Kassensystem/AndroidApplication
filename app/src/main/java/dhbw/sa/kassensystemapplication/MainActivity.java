@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
     private Table table;
     private int tableID = 0;
 
-    public static String ip = "http://192.168.178.22:8080/api";
+    public static String url = "http://192.168.178.20:8080/api";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 ResponseEntity<ArrayList<Table>> responseEntity =
                         restTemplate.exchange
-                                (ip + "/tables", HttpMethod.GET,
+                                (url + "/tables", HttpMethod.GET,
                                         null, new ParameterizedTypeReference<ArrayList<Table>>() {});
 
                 ArrayList<Table> tables = responseEntity.getBody();
@@ -134,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 ResponseEntity<ArrayList<Item>> responseEntity =
                         restTemplate.exchange
-                                ( ip + "/items/", HttpMethod.GET,
+                                ( url + "/items/", HttpMethod.GET,
                                         null, new ParameterizedTypeReference<ArrayList<Item>>() {});
 
                 allItems = responseEntity.getBody();
