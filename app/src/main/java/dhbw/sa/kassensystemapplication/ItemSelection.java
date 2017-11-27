@@ -1,5 +1,6 @@
 package dhbw.sa.kassensystemapplication;
 
+import android.Manifest;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -29,6 +30,7 @@ import java.util.ArrayList;
 import dhbw.sa.kassensystemapplication.entity.Item;
 import dhbw.sa.kassensystemapplication.entity.Order;
 
+import static dhbw.sa.kassensystemapplication.MainActivity.allItems;
 import static dhbw.sa.kassensystemapplication.MainActivity.url;
 
 /**
@@ -48,7 +50,7 @@ public class ItemSelection extends AppCompatActivity {
     private ArrayList<Item> orderItems = new ArrayList<>();
     public static double price = 0;
     public static int tableID = 0;
-    public int updatableOrderID = 0;
+    public static int updatableOrderID = 0;
     public boolean orderIsPaid = false;
 
 
@@ -72,6 +74,7 @@ public class ItemSelection extends AppCompatActivity {
         int maxY = mdispSize.y;
 
         sum = (TextView) findViewById(R.id.sumTV);
+        sum.setText("0.0 €");
         orderbtn = (Button) findViewById(R.id.orderBtn);
         paidbtn = (Button) findViewById(R.id.paidBtn);
         RelativeLayout rl = (RelativeLayout) findViewById(R.id.rl);
@@ -88,19 +91,28 @@ public class ItemSelection extends AppCompatActivity {
 
                 String name = MainActivity.allItems.get(i).getName();
 
-                // deklaration of the TextView for the Items and the Buttons (+ and -)
+                // declaration of the TextView for the Items and the Buttons (+ and -)
                 final TextView txt = new TextView(this);
                 final TextView quantityTextField = new TextView(this);
+                final TextView inventoryTextView = new TextView(this);
                 Button plus = new Button(this);
                 Button minus = new Button(this);
 
                 // Params for the TextView txt
                 txt.setLayoutParams(new LinearLayout.LayoutParams(30 * pix, 10 * pix));
                 txt.setText(name);
+                txt.setId(-i);
                 txt.setX(pix / 10);
                 txt.setY(posY);
                 txt.setPadding(pix, pix, pix, pix);
                 rl.addView(txt);
+
+                inventoryTextView.setLayoutParams(new LinearLayout.LayoutParams(30*pix,10*pix));
+                inventoryTextView.setText(Integer.toString(MainActivity.allItems.get(i).getQuantity()));
+                inventoryTextView.setX(maxX - (18 * pix));
+                inventoryTextView.setY(posY);
+                inventoryTextView.setPadding(pix,pix,pix,pix);
+                rl.addView(inventoryTextView);
 
                 // Params for the TextView quantityTextField
                 quantityTextField.setLayoutParams(new LinearLayout.LayoutParams(8 * pix, 10 * pix));
@@ -110,6 +122,28 @@ public class ItemSelection extends AppCompatActivity {
                 quantityTextField.setY(posY);
                 quantityTextField.setPadding(pix, pix, pix, pix);
                 rl.addView(quantityTextField);
+
+                for (Integer itemID: MainActivity.itemsOfOrder){
+
+                    if(itemID == MainActivity.allItems.get(i).getItemID()){
+
+                        int number = Integer.parseInt((String)quantityTextField.getText());
+                        number++;
+
+                        int numberOfInventory = Integer.parseInt((String)inventoryTextView.getText());
+                        numberOfInventory--;
+                        inventoryTextView.setText(Integer.toString(numberOfInventory));
+
+                        speicher = speicher + MainActivity.allItems.get(i).getRetailprice();
+                        speicher = (double) ((int) speicher + (Math.round(Math.pow(10, 3) * (speicher - (int) speicher))) / (Math.pow(10, 3)));
+
+                        quantityTextField.setText(Integer.toString(number));
+                        sum.setText(Double.toString(speicher) + " €");
+
+
+                    }
+
+                }
 
                 // Params for the Button: +
                 plus.setLayoutParams(new LinearLayout.LayoutParams(4 * pix, 4 * pix));
@@ -136,32 +170,40 @@ public class ItemSelection extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
 
-                        String selectedQuantity = (String) quantityTextField.getText();
+                        if(Integer.parseInt((String)inventoryTextView.getText())>0) {
 
-                        int number = Integer.parseInt(selectedQuantity);
-                        number++;
+                            String selectedQuantity = (String) quantityTextField.getText();
 
-                        // Search for the right Item, to get the Retailprice
-                        for (int i = 0; i < MainActivity.allItems.size(); i++) {
+                            int number = Integer.parseInt(selectedQuantity);
+                            number++;
 
-                            if (MainActivity.allItems.get(i).getName().equalsIgnoreCase((String) txt.getText())) { //TODO: Nicht name sondern ID abfragen
+                            int numberOfInventory = Integer.parseInt((String) inventoryTextView.getText());
+                            numberOfInventory--;
 
-                                speicher = speicher + (MainActivity.allItems.get(i).getRetailprice());
-                                speicher = (double) ((int) speicher + (Math.round(Math.pow(10, 3) * (speicher - (int) speicher))) / (Math.pow(10, 3)));
+                            inventoryTextView.setText(Integer.toString(numberOfInventory));
 
-                                orderItems.add(MainActivity.allItems.get(i)); //Todo: auch bei minus button
+                            // Search for the right Item, to get the Retailprice
+                            for (int i = 0; i < MainActivity.allItems.size(); i++) {
 
-                                break;
+                                if (MainActivity.allItems.get(i).getName().equalsIgnoreCase((String) txt.getText())) { //TODO: Nicht name sondern ID abfragen
+
+                                    speicher = speicher + (MainActivity.allItems.get(i).getRetailprice());
+                                    speicher = (double) ((int) speicher + (Math.round(Math.pow(10, 3) * (speicher - (int) speicher))) / (Math.pow(10, 3)));
+
+                                    orderItems.add(MainActivity.allItems.get(i)); //Todo: auch bei minus button
+
+                                    break;
+                                }
+
                             }
 
+                            selectedQuantity = Integer.toString(number);
+
+                            quantityTextField.setText(selectedQuantity);
+                            sum.setText(Double.toString(speicher) + " €");
+                            //price = Double.parseDouble(sum.getText().toString());
+                            price = speicher;
                         }
-
-                        selectedQuantity = Integer.toString(number);
-
-                        quantityTextField.setText(selectedQuantity);
-                        sum.setText(Double.toString(speicher) + " €");
-                        //price = Double.parseDouble(sum.getText().toString());
-                        price = speicher;
                     }
 
                 });
@@ -175,9 +217,14 @@ public class ItemSelection extends AppCompatActivity {
                         String numberAsString = (String) quantityTextField.getText();
 
                         int number = Integer.parseInt(numberAsString);
+                        int numberOfInventory = Integer.parseInt((String)inventoryTextView.getText());
 
                         if (number > 0) {
+
                             number--;
+                            numberOfInventory++;
+
+                            inventoryTextView.setText(Integer.toString(numberOfInventory));
 
                             // Search for the right Item, to get the Retailprice
                             for (int i = 0; i < MainActivity.allItems.size(); i++) {
@@ -206,7 +253,7 @@ public class ItemSelection extends AppCompatActivity {
         }
 
 
-        sum.setText("0.0 €");
+
         sum.setTextColor(Color.RED);
         sum.setTextSize(pix*2);
 
@@ -252,7 +299,32 @@ public class ItemSelection extends AppCompatActivity {
         ArrayList<Integer> itemIDs = Order.splitItemIDString(order.getItems());
         for(Integer i: itemIDs) {
             // TODO aktualisieren der ausgewählten Items der order
+            for(int var= 0; var < allItems.size(); var++ ){
+                Item item = allItems.get(var);
+                if(item.getItemID()==i){
+                    TextView quantityTextView = (TextView) findViewById(var);
+                    String numberAsString;
+                    numberAsString = (String) quantityTextView.getText();
+                    int number = Integer.parseInt(numberAsString);
+                    number++;
 
+                    // Search for the right Item, to get the Retailprice
+                    for (int var2 = 0; var2 < MainActivity.allItems.size(); var2++) {
+
+                        if (MainActivity.allItems.get(var2).getName().equalsIgnoreCase((String) quantityTextView.getText())) { //TODO: Nicht name sondern ID abfragen
+
+                            speicher = speicher + (MainActivity.allItems.get(var2).getRetailprice());
+                            speicher = (double) ((int) speicher + (Math.round(Math.pow(10, 3) * (speicher - (int) speicher))) / (Math.pow(10, 3)));
+
+                            orderItems.add(MainActivity.allItems.get(var2)); //Todo: auch bei minus button
+
+                            break;
+                        }
+
+                    }
+
+                }
+            }
         }
 
     }
@@ -317,45 +389,5 @@ public class ItemSelection extends AppCompatActivity {
         }
 
     }
-
-    private class GetAllOrders extends AsyncTask<Void,Void,ArrayList<Order>> {
-
-        @Override
-        protected ArrayList<Order> doInBackground(Void... params) {
-            try {
-                RestTemplate restTemplate = new RestTemplate();
-
-                restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-                ResponseEntity<ArrayList<Order>> responseEntity =
-                        restTemplate.exchange
-                                (url + "/orders", HttpMethod.GET,
-                                        null, new ParameterizedTypeReference<ArrayList<Order>>() {});
-                ArrayList<Order> allOrders = responseEntity.getBody();
-
-                return allOrders;
-
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        protected void onPostExecute( ArrayList<Order> allOrders) {
-            super.onPostExecute(allOrders);
-
-            for(Order o: allOrders){
-                System.out.println(o.getItems());
-                if(!o.isPaid() && o.getTable() == tableID) {
-                    refreshDisplayedItems(o);
-                    updatableOrderID = o.getOrderID();
-                }
-            }
-            /*
-         *  TODO Überprüfen, ob mit diesem Tisch eine nicht-bezahlte Order existiert
-         *  TODO Wenn ja, den Inhalt dieser Order darstellen (entsprechend die dargestellten Inhalte anpassen)
-         */
-        }
-    }
-
 
 }
