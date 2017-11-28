@@ -1,10 +1,17 @@
 package dhbw.sa.kassensystemapplication;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -25,7 +32,7 @@ import dhbw.sa.kassensystemapplication.entity.Item;
 import dhbw.sa.kassensystemapplication.entity.Order;
 import dhbw.sa.kassensystemapplication.entity.Table;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
     //private String[] textOfSpinner;
     private Spinner spinnerTV;
@@ -40,14 +47,34 @@ public class MainActivity extends AppCompatActivity {
     private String itemsOfOrderAsString;
     private String tableName;
 
+    private DrawerLayout drawerLayout;
+    private ActionBarDrawerToggle toggle;
 
-    public static String url = "http://192.168.178.22:8080/api";
+
+    public static String ip = null;
+    public static String url = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        SharedPreferences shared = getSharedPreferences("URLinfo", Context.MODE_PRIVATE);
+        ip = shared.getString("ip","");
+
+        url = "http://"+ip+":8080/api";
+
+        // Creat the Navigation Draw
+        drawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
+        toggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.open ,R.string.close);
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
+        //End of Navigation Draw
 
         try {
             new GetAllItems().execute();
@@ -87,8 +114,8 @@ public class MainActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 Object item = adapterView.getItemAtPosition(i);
                 tableName = item.toString();
-                if (tableName != "Bitte wählen:") {
-                    for (Table t : allTables) {
+               if (tableName != "Bitte wählen:") {
+                     for (Table t : allTables) {
                         if (t.getName() == tableName) {
                             table = t;
                             System.out.println("TISCH AUSGEWÄHLT: " + t.getName()); //debug
@@ -99,9 +126,9 @@ public class MainActivity extends AppCompatActivity {
 
                                 if (!o.isPaid() && t.getTableID() == o.getTable()) {
 
-                                    ItemSelection.updatableOrderID = o.getOrderID();
-                                    itemsOfOrder = Order.splitItemIDString(o.getItems());
-                                    System.out.println("-----------------------------------------------");
+                                   ItemSelection.updatableOrderID = o.getOrderID();
+                                   itemsOfOrder = Order.splitItemIDString(o.getItems());
+                                   System.out.println("-----------------------------------------------");
 
                                     for (int j = 0; j < itemsOfOrder.size(); j++) {
                                         System.out.println(itemsOfOrder.get(j));
@@ -238,6 +265,44 @@ public class MainActivity extends AppCompatActivity {
 
         Toast.makeText(this, handoverText, Toast.LENGTH_LONG).show();
 
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        if(toggle.onOptionsItemSelected(item)){
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+
+        if (id == R.id.nav_URL) {
+
+            Intent intent = new Intent(MainActivity.this, URLInput.class);
+
+            startActivity(intent);
+
+        } else if (id == R.id.nav_Login){
+
+            //TODO: LOGIN View einbauen
+            showToast("Hier muss dann die LOGIN Activity noch erscheinen!");
+
+        }else if (id == R.id.nav_CR) {
+
+            showToast("Marvin Mai\nDaniel Schifano");
+
+        }
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
     }
 
 
