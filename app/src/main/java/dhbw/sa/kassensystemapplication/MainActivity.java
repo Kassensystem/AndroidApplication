@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Looper;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -24,6 +25,8 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -62,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         SharedPreferences shared = getSharedPreferences("URLinfo", Context.MODE_PRIVATE);
         ip = shared.getString("ip","");
 
-        url = "http://"+ip+":8080/api";
+        url = ip+":8080/api";
 
         // Creat the Navigation Draw
         drawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
@@ -81,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             new GetAllTables().execute();
             new GetAllOrders().execute();
         } catch (Exception e) {
-            Toast.makeText(this, "Verbindung fehlgeschlagen.\n Bitte überprügen Sie ihren URL", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Verbindung fehlgeschlagen.\n Bitte überprügen Sie ihre URL", Toast.LENGTH_LONG).show();
         }
 
 
@@ -171,30 +174,35 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 return tables;
 
 
-            }catch (Exception e){
-                e.printStackTrace();
+            }catch (HttpClientErrorException e){
+                String message = getMessage(e.getResponseBodyAsString());
+                showToast(message);
+                return null;
+            } catch(ResourceAccessException e) {
+                showToast("Keine Verbindung möglich! Bitte die URL überprüfen.");
+                return null;
             }
-
-            return null;
         }
         @Override
         protected void onPostExecute( ArrayList<Table> tables) {
             super.onPostExecute(tables);
-            String [] textOfSpinner = new String[tables.size()+1];
-            textOfSpinner[0] = "Bitte wählen:";
-            for(int i=0; i < tables.size(); i++){
+            if (tables != null) {
+                String [] textOfSpinner = new String[tables.size()+1];
+                textOfSpinner[0] = "Bitte wählen:";
+                for(int i=0; i < tables.size(); i++){
 
-                if(tables.get(i).isAvailable()) {
-                    textOfSpinner[i+1] = tables.get(i).getName();
+                    if(tables.get(i).isAvailable()) {
+                        textOfSpinner[i+1] = tables.get(i).getName();
+                    }
+
                 }
 
+                spinnerTV = (Spinner) findViewById(R.id.spinnerTV);
+                confirmTV = (Button) findViewById(R.id.confirmTV);
+
+                ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_spinner_dropdown_item, textOfSpinner);
+                spinnerTV.setAdapter(spinnerAdapter);
             }
-
-            spinnerTV = (Spinner) findViewById(R.id.spinnerTV);
-            confirmTV = (Button) findViewById(R.id.confirmTV);
-
-            ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_spinner_dropdown_item, textOfSpinner);
-            spinnerTV.setAdapter(spinnerAdapter);
 
         }
     }
@@ -215,13 +223,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                 allItems = responseEntity.getBody();
 
-
                 return allItems;
 
-            }catch (Exception e) {
+            }catch (HttpClientErrorException e){
+                String message = getMessage(e.getResponseBodyAsString());
+                showToast(message);
+                return null;
+            }catch(ResourceAccessException e) {
+                showToast("Keine Verbindung möglich! Bitte die URL überprüfen.");
                 return null;
             }
-
         }
 
     }
@@ -242,16 +253,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                 return orders;
 
-            }catch (Exception e){
-                e.printStackTrace();
+            }catch (HttpClientErrorException e){
+                String message = getMessage(e.getResponseBodyAsString());
+                showToast(message);
+                return null;
+            }catch(ResourceAccessException e) {
+                showToast("Keine Verbindung möglich! Bitte die URL überprüfen.");
+                return null;
             }
-            return null;
         }
 
         protected void onPostExecute( ArrayList<Order> orders) {
             super.onPostExecute(orders);
 
-            allOrders = orders;
+            if (orders != null) {
+                //allOrders = orders;
+            }
             //allOrders.add(new Order(1,"2;3;2;",1,2.50, DateTime.now(),false));
 
             /*
@@ -262,9 +279,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     public void showToast(String handoverText){
-
-        Toast.makeText(this, handoverText, Toast.LENGTH_LONG).show();
-
+        //Toast.makeText(this, handoverText, Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -305,5 +320,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return true;
     }
 
+    /**
+     * Extrahiert die Fehlermessage aus dem Body der JSON-Rückmeldung
+     * @param body body der Rückmeldung des RestApiContorllers in JSON
+     * @return extrahierte Fehlermessage des RestApiControllers
+     */
+    private static String getMessage(String body) {
+        int lastindex = body.lastIndexOf("message");
+        char [] charArray = body.toCharArray();
+        int index = lastindex + 10;
+        char newChar = charArray[index];
+        StringBuilder message = new StringBuilder();
+        while(!String.valueOf(newChar).equals("\"")) {
+            message.append(newChar);
+            newChar = charArray[++index];
+        }
+        return message.toString();
+    }
 
 }
