@@ -1,14 +1,11 @@
 package dhbw.sa.kassensystemapplication.fragment;
 
-import android.content.Context;
 import android.graphics.Color;
-import android.graphics.Point;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.util.TypedValue;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,8 +17,6 @@ import android.widget.TextView;
 import org.joda.time.DateTime;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.ArrayList;
 
 import dhbw.sa.kassensystemapplication.ItemSelection;
 import dhbw.sa.kassensystemapplication.MainActivity;
@@ -37,11 +32,12 @@ public class ItemSelect extends Fragment {
     private TextView sum;
     private Button orderBtn;
     private Button paidBtn;
+    private boolean orderIsPaid;
 
     // variables
     private double storeOfSum;
     private int sizeOfRelativeLayout;
-
+    private boolean isOrderPaid;
 
     // Constructor
     public ItemSelect() {
@@ -231,7 +227,29 @@ public class ItemSelect extends Fragment {
         orderBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                new CreatNewOrder().execute();
+                isOrderPaid = false;
+                if(MainActivity.selectedOrderID >= 0){
+                    new UpdateOrder().execute();
+                    showTableFragment();
+                } else {
+                    new CreatNewOrder().execute();
+                    showTableFragment();
+                }
+
+            }
+        });
+
+        paidBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                isOrderPaid = true;
+                if(MainActivity.selectedOrderID >= 0){
+                    new UpdateOrder().execute();
+                    showTableFragment();
+                } else {
+                    new CreatNewOrder().execute();
+                    showTableFragment();
+                }
             }
         });
 
@@ -307,7 +325,7 @@ public class ItemSelect extends Fragment {
 
     }
 
-    private static class CreatNewOrder extends AsyncTask<Void, Void, Void> {
+    private class CreatNewOrder extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected Void doInBackground(Void... params) {
@@ -319,10 +337,10 @@ public class ItemSelect extends Fragment {
             System.out.println(itemIDs);
             int tableID = MainActivity.selectedTable.getTableID();
             System.out.println(tableID);
-            double price = 2.59;
+            double price = storeOfSum;
             System.out.println(price);
 
-            Order order = new Order("1;2;2;3;", 1, 1.5, false);
+            Order order = new Order(itemIDs, tableID, price, isOrderPaid);
 
             //Order übertragen
             // TODO Das Datum kann nicht übertragen werden. Wird momentan auf controllerseite erzeugt.
@@ -340,6 +358,33 @@ public class ItemSelect extends Fragment {
 
 }
 
+    private class UpdateOrder extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            RestTemplate restTemplate = new RestTemplate();
+
+            try {
+                String itemIDs = Order.joinIntIDsIntoString(MainActivity.orderItemIDs);
+                System.out.println(itemIDs);
+                int tableID = MainActivity.selectedTable.getTableID();
+                System.out.println(tableID);
+                double price = storeOfSum;
+                System.out.println(price);
+                Order order = new Order(MainActivity.selectedOrderID, itemIDs, tableID, price, null, orderIsPaid);
+
+                //Order übertragen
+                // TODO Das Datum kann nicht übertragen werden. Wird momentan auf controllerseite erzeugt.
+                restTemplate.put(url + "/order/" + order.getOrderID(), order);
+
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+    }
     /**
      * Extrahiert die Fehlermessage aus dem Body der JSON-Rückmeldung
      * @param body body der Rückmeldung des RestApiContorllers in JSON
@@ -356,6 +401,15 @@ public class ItemSelect extends Fragment {
             newChar = charArray[++index];
         }
         return message.toString();
+    }
+
+    private void showTableFragment(){
+
+        TableSelection fragment = new TableSelection();
+        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.frame,fragment,"fragment1");
+        fragmentTransaction.commit();
+
     }
 
 }

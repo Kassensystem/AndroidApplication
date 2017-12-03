@@ -16,7 +16,9 @@ import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import org.apache.http.params.HttpParams;
 import org.joda.time.DateTime;
+import org.json.JSONObject;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +27,10 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.DataOutput;
+import java.io.DataOutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 
 import dhbw.sa.kassensystemapplication.entity.Item;
@@ -41,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public static ArrayList<Order> allOrders = new ArrayList<>();
     public static ArrayList<Integer> orderItemIDs = new ArrayList<>();
     public static Table selectedTable;
-    public static int selectedOrderID;
+    public static int selectedOrderID = -1;
 
     // The variables to get the connection with the server
     public static String ip = null;

@@ -149,6 +149,7 @@ public class TableSelection extends Fragment {
             super.onPostExecute(tables);
             if(text != null){
                 showToast(text);
+                text = null;
             } else {
 
                 for (int j = 0; j < MainActivity.allTables.size(); j++) {
@@ -231,6 +232,7 @@ public class TableSelection extends Fragment {
 
             if(text != null){
                 showToast(text);
+                text = null;
             }
 
         }
@@ -271,6 +273,7 @@ public class TableSelection extends Fragment {
 
             if(text != null){
                 showToast(text);
+                text = null;
             }
 
             if (orders != null) {
@@ -283,7 +286,6 @@ public class TableSelection extends Fragment {
          */
         }
     }
-
 
     /**
      * Extrahiert die Fehlermessage aus dem Body der JSON-Rückmeldung
@@ -337,7 +339,7 @@ public class TableSelection extends Fragment {
 
     private void showToast(String text){
 
-        //Toast.makeText(getActivity(), text, Toast.LENGTH_LONG).show();
+        Toast.makeText(getActivity(), text, Toast.LENGTH_LONG).show();
         System.out.println(text);
     }
 
