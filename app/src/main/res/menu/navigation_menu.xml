@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <item android:id="@+id/nav_Order"
+        android:title="Bestellung aufgeben"
+        android:icon="@drawable/ic_add_shopping_cart_black_24dp"></item>
+
     <item android:id="@+id/nav_URL"
         android:title="URL auswählen"
         android:icon="@drawable/ic_wifi_black_24dp"></item>

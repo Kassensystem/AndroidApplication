@@ -19,7 +19,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".ItemSelection"></activity>
-        <activity android:name=".URLInput"></activity>
     </application>
 
 </manifest>

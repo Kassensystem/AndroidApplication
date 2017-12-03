@@ -1,0 +1,63 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="dhbw.sa.kassensystemapplication.fragment.ItemSelect">
+
+    <!-- TODO: Update blank fragment layout -->
+
+    <RelativeLayout
+        android:id="@+id/activity_item_selection"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        tools:context="dhbw.sa.kassensystemapplication.ItemSelection">
+
+        <Button
+            android:id="@+id/orderBtn"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:layout_above="@+id/paidBtn"
+            android:layout_alignParentEnd="true"
+            android:layout_marginBottom="5dp"
+            android:text="Bestellen" />
+
+        <Button
+            android:id="@+id/paidBtn"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginBottom="5dp"
+            android:text="Bezahlen" />
+
+        <TextView
+            android:id="@+id/sumIV"
+            android:layout_width="400dp"
+            android:layout_height="40dp"
+            android:layout_alignBottom="@+id/paidBtn"
+            android:layout_marginRight="50dp"
+            android:layout_toStartOf="@+id/paidBtn"
+            android:text="TextView" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/orderBtn"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true">
+
+            <RelativeLayout
+                android:id="@+id/rl"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            </RelativeLayout>
+        </ScrollView>
+
+    </RelativeLayout>
+
+</FrameLayout>

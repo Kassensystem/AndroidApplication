@@ -123,7 +123,7 @@ public class ItemSelection extends AppCompatActivity {
                 quantityTextField.setPadding(pix, pix, pix, pix);
                 rl.addView(quantityTextField);
 
-                for (Integer itemID: MainActivity.itemsOfOrder){
+                for (Integer itemID: MainActivity.orderItemIDs){
 
                     if(itemID == MainActivity.allItems.get(i).getItemID()){
 
@@ -292,41 +292,6 @@ public class ItemSelection extends AppCompatActivity {
         Intent intent = new Intent(ItemSelection.this, MainActivity.class);
 
         startActivity(intent);
-    }
-
-    private void refreshDisplayedItems(Order order) {
-
-        ArrayList<Integer> itemIDs = Order.splitItemIDString(order.getItems());
-        for(Integer i: itemIDs) {
-            // TODO aktualisieren der ausgewählten Items der order
-            for(int var= 0; var < allItems.size(); var++ ){
-                Item item = allItems.get(var);
-                if(item.getItemID()==i){
-                    TextView quantityTextView = (TextView) findViewById(var);
-                    String numberAsString;
-                    numberAsString = (String) quantityTextView.getText();
-                    int number = Integer.parseInt(numberAsString);
-                    number++;
-
-                    // Search for the right Item, to get the Retailprice
-                    for (int var2 = 0; var2 < MainActivity.allItems.size(); var2++) {
-
-                        if (MainActivity.allItems.get(var2).getName().equalsIgnoreCase((String) quantityTextView.getText())) { //TODO: Nicht name sondern ID abfragen
-
-                            speicher = speicher + (MainActivity.allItems.get(var2).getRetailprice());
-                            speicher = (double) ((int) speicher + (Math.round(Math.pow(10, 3) * (speicher - (int) speicher))) / (Math.pow(10, 3)));
-
-                            orderItems.add(MainActivity.allItems.get(var2)); //Todo: auch bei minus button
-
-                            break;
-                        }
-
-                    }
-
-                }
-            }
-        }
-
     }
 
     private class CreatNewOrder extends AsyncTask<Void, Void, Void> {
