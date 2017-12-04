@@ -57,6 +57,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle toggle;
 
+    public static Context context;
+
 
 
 
@@ -64,6 +66,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        context = this.getApplicationContext();
 
         //Load the URL. If there is non, set URL standard
         if (!loadURL()){
@@ -118,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             setTitle("URL Einstellen");
             URL_Einstellen fragment = new URL_Einstellen();
             FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-            fragmentTransaction.replace(R.id.frame,fragment,"fragment1");
+            fragmentTransaction.replace(R.id.frame, fragment);
             fragmentTransaction.commit();
 
         } else if (id == R.id.nav_Login){
@@ -134,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             setTitle("Bestellung aufgeben");
             TableSelection fragment = new TableSelection();
             FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-            fragmentTransaction.replace(R.id.frame,fragment,"fragment1");
+            fragmentTransaction.replace(R.id.frame,fragment);
             fragmentTransaction.commit();
 
         }

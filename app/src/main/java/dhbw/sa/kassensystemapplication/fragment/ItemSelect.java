@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.joda.time.DateTime;
 import org.springframework.web.client.HttpClientErrorException;
@@ -33,6 +34,7 @@ public class ItemSelect extends Fragment {
     private Button orderBtn;
     private Button paidBtn;
     private boolean orderIsPaid;
+    public static String text = null;
 
     // variables
     private double storeOfSum;
@@ -347,16 +349,26 @@ public class ItemSelect extends Fragment {
             restTemplate.postForLocation(url + "/order/", order, Order.class);
 
         } catch (HttpClientErrorException e){
-            String message = getMessage(e.getResponseBodyAsString());
-            System.out.println("-----------------------------------------\n"+message);
 
+            text = e.getResponseBodyAsString();
+            return null;
         }catch (Exception e){
+
+            text = "undefinierter Fehler";
             e.printStackTrace();
         }
         return null;
     }
 
-}
+    @Override
+    protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            showToast(text);
+
+
+        }
+    }
 
     private class UpdateOrder extends AsyncTask<Void, Void, Void> {
 
@@ -372,43 +384,48 @@ public class ItemSelect extends Fragment {
                 System.out.println(tableID);
                 double price = storeOfSum;
                 System.out.println(price);
-                Order order = new Order(MainActivity.selectedOrderID, itemIDs, tableID, price, null, orderIsPaid);
-
+                Order order = new Order(MainActivity.selectedOrderID, itemIDs, tableID, price, null, isOrderPaid);
                 //Order übertragen
                 // TODO Das Datum kann nicht übertragen werden. Wird momentan auf controllerseite erzeugt.
                 restTemplate.put(url + "/order/" + order.getOrderID(), order);
 
+            } catch (HttpClientErrorException e){
+                text = e.getResponseBodyAsString();
+                return null;
             }catch (Exception e){
+                text = "undefinierter Fehler";
                 e.printStackTrace();
             }
             return null;
         }
 
-    }
-    /**
-     * Extrahiert die Fehlermessage aus dem Body der JSON-Rückmeldung
-     * @param body body der Rückmeldung des RestApiContorllers in JSON
-     * @return extrahierte Fehlermessage des RestApiControllers
-     */
-    private static String getMessage(String body) {
-        int lastindex = body.lastIndexOf("message");
-        char [] charArray = body.toCharArray();
-        int index = lastindex + 10;
-        char newChar = charArray[index];
-        StringBuilder message = new StringBuilder();
-        while(!String.valueOf(newChar).equals("\"")) {
-            message.append(newChar);
-            newChar = charArray[++index];
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            showToast(text);
+
         }
-        return message.toString();
+
+
     }
 
     private void showTableFragment(){
 
         TableSelection fragment = new TableSelection();
         FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.frame,fragment,"fragment1");
+        fragmentTransaction.replace(R.id.frame, fragment);
         fragmentTransaction.commit();
+
+    }
+
+    private void showToast(String text){
+
+        if(text != null){
+            Toast.makeText(MainActivity.context, text, Toast.LENGTH_LONG).show();
+            this.text = null;
+        }
+
 
     }
 

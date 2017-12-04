@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import org.joda.time.DateTime;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -26,12 +27,15 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 import dhbw.sa.kassensystemapplication.MainActivity;
 import dhbw.sa.kassensystemapplication.R;
 import dhbw.sa.kassensystemapplication.entity.Item;
 import dhbw.sa.kassensystemapplication.entity.Order;
 import dhbw.sa.kassensystemapplication.entity.Table;
+
 
 public class TableSelection extends Fragment {
 
@@ -78,6 +82,8 @@ public class TableSelection extends Fragment {
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
 
+                //TODO: Hier wenn nichts ausgewählt ist soll
+
             }
         });
 
@@ -107,7 +113,6 @@ public class TableSelection extends Fragment {
             }
         });
 
-
         return v;
 
     }
@@ -133,10 +138,10 @@ public class TableSelection extends Fragment {
                 return tables;
 
             } catch (HttpClientErrorException e){
-                text = getMessage(e.getResponseBodyAsString());
+                text = e.getResponseBodyAsString();
                  return null;
             } catch (ResourceAccessException e) {
-                text = "Es konnte keine Verbindung aufgenaut werden";
+                text = "Es konnte keine Verbindung aufgebaut werden.";
                 return null;
             }
             catch (Exception e){
@@ -174,7 +179,7 @@ public class TableSelection extends Fragment {
                 String[] textOfSpinner = new String[MainActivity.allTables.size() + 1];
                 if (tables != null) {
 
-                    textOfSpinner[0] = "Bitte wählen:";
+                    textOfSpinner[0] = "";
                     for (int i = 0; i < tables.size(); i++) {
 
                         textOfSpinner[i + 1] = tables.get(i).getName();
@@ -214,10 +219,10 @@ public class TableSelection extends Fragment {
                 return MainActivity.allItems;
 
             } catch (HttpClientErrorException e){
-                text = getMessage(e.getResponseBodyAsString());
+                text = e.getResponseBodyAsString();
                 return null;
             } catch (ResourceAccessException e) {
-                text = "Es konnte keine Verbindung aufgenaut werden";
+                text = "Es konnte keine Verbindung aufgebaut werden.";
                 return null;
             }
             catch (Exception e){
@@ -244,22 +249,42 @@ public class TableSelection extends Fragment {
         protected ArrayList<Order> doInBackground(Void... params) {
             try {
                 RestTemplate restTemplate = new RestTemplate();
-
-                restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+/*
+                //restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
                 ResponseEntity<ArrayList<Order>> responseEntity =
                         restTemplate.exchange
                                 (MainActivity.url + "/orders", HttpMethod.GET,
                                         null, new ParameterizedTypeReference<ArrayList<Order>>() {});
                 ArrayList<Order> orders = responseEntity.getBody();
-                text = null;
+  */              text = null;
 
-                return orders;
+                List<LinkedHashMap<String, Object>> orderMap = restTemplate.getForObject(MainActivity.url + "/orders", List.class);
+                if(orderMap != null) {
+                    MainActivity.allOrders.clear();
+                    for (LinkedHashMap<String, Object> map:orderMap){
+
+                        DateTime date = new DateTime(map.get("date"));
+                        int id = (Integer)map.get("orderID");
+
+                        Order order = new Order (id,
+                                (String)map.get("itemIDs"),
+                                (int)map.get("tableID"),
+                                (double)map.get("price"),
+                                date,
+                                (Boolean)map.get("paid"));
+
+
+                        MainActivity.allOrders.add(order);
+                    }
+                }
+
+                return null;
 
             } catch (HttpClientErrorException e){
-                text = getMessage(e.getResponseBodyAsString());
+                text = e.getResponseBodyAsString();
                 return null;
             } catch (ResourceAccessException e) {
-                text = "Es konnte keine Verbindung aufgenaut werden";
+                text = "Es konnte keine Verbindung aufgebaut werden";
                 return null;
             }
             catch (Exception e){
@@ -287,28 +312,10 @@ public class TableSelection extends Fragment {
         }
     }
 
-    /**
-     * Extrahiert die Fehlermessage aus dem Body der JSON-Rückmeldung
-     * @param body body der Rückmeldung des RestApiContorllers in JSON
-     * @return extrahierte Fehlermessage des RestApiControllers
-     */
-    private static String getMessage(String body) {
-        int lastindex = body.lastIndexOf("message");
-        char [] charArray = body.toCharArray();
-        int index = lastindex + 10;
-        char newChar = charArray[index];
-        StringBuilder message = new StringBuilder();
-        while(!String.valueOf(newChar).equals("\"")) {
-            message.append(newChar);
-            newChar = charArray[++index];
-        }
-        return message.toString();
-    }
-
     private void isOrderPaidAtTheSelectedTable(String tableName){
 
         // Request if there is a table selected
-        if(tableName != "Bitte wählen:") {
+        if(tableName != "") {
 
             // adjustment of all Tables and the selected Table
             for (Table t : MainActivity.allTables) {
@@ -339,8 +346,11 @@ public class TableSelection extends Fragment {
 
     private void showToast(String text){
 
-        Toast.makeText(getActivity(), text, Toast.LENGTH_LONG).show();
+        Toast.makeText(MainActivity.context, text, Toast.LENGTH_LONG).show();
         System.out.println(text);
     }
+
+
+
 
 }

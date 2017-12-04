@@ -38,19 +38,19 @@ public class Order {
      * @param date Datum und Zeitpunkt der Bestellung aus der Datenbank, not null.
      * @param paid Bezahlstatus der Bestellung aus der Datenbank.
      */
-    @JsonCreator
+    //@JsonCreator
     public Order(@JsonProperty("orderID") int orderID,
-                 @JsonProperty("itemIDs") String itemIDs,
-                 @JsonProperty("tableID") int tableID,
-                 @JsonProperty("price") double price,
-                 @JsonProperty("date") DateTime date,
-                 @JsonProperty("paid") boolean paid) {
+                  @JsonProperty("itemIDs") String itemIDs,
+                  @JsonProperty("tableID") int tableID,
+                  @JsonProperty("price") double price,
+                  @JsonProperty("date") DateTime date,
+                  @JsonProperty("paid") boolean paid) {
 
         if(itemIDs == null)
             throw new NullPointerException("Es müssen itemIDs übergeben werden!");
 
-        if(date == null)
-            throw new NullPointerException("Es muss ein Datum übergeben werden!");
+        if(date == null){}
+            //throw new NullPointerException("Es muss ein Datum übergeben werden!");
 
         this.orderID = orderID;
         this.itemIDs = itemIDs;
@@ -74,8 +74,8 @@ public class Order {
         if(itemIDs == null)
             throw new NullPointerException("Es müssen itemIDs übergeben werden!");
 
-        if(date == null)
-            throw new NullPointerException("Es ein Datum übergeben werden!");
+        if(date == null){}
+            //throw new NullPointerException("Es ein Datum übergeben werden!");
 
         this.itemIDs = itemIDs;
         this.tableID = tableID;
@@ -130,6 +130,10 @@ public class Order {
     }
 
     /*Setter*/
+
+    public void setOrderID(int orderID) {
+        this.orderID = orderID;
+    }
 
     public void setItemIDs(String itemIDs) {
 

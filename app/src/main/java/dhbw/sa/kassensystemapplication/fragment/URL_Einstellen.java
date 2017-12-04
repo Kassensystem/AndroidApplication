@@ -82,6 +82,7 @@ public class URL_Einstellen extends Fragment {
                 FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
                 fragmentTransaction.replace(R.id.frame,fragment,"fragment1");
                 fragmentTransaction.commit();
+                getActivity().setTitle("Bestellung aufgeben");
             }
         });
 
