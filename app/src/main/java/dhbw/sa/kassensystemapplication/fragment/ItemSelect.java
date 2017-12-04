@@ -396,6 +396,7 @@ public class ItemSelect extends Fragment {
                 text = "undefinierter Fehler";
                 e.printStackTrace();
             }
+
             return null;
         }
 
