@@ -20,12 +20,14 @@ import android.widget.Toast;
 import org.joda.time.DateTime;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -34,7 +36,11 @@ import dhbw.sa.kassensystemapplication.MainActivity;
 import dhbw.sa.kassensystemapplication.R;
 import dhbw.sa.kassensystemapplication.entity.Item;
 import dhbw.sa.kassensystemapplication.entity.Order;
+import dhbw.sa.kassensystemapplication.entity.OrderedItem;
 import dhbw.sa.kassensystemapplication.entity.Table;
+
+import static dhbw.sa.kassensystemapplication.MainActivity.selectedTable;
+import static dhbw.sa.kassensystemapplication.MainActivity.url;
 
 
 public class TableSelection extends Fragment {
@@ -97,7 +103,14 @@ public class TableSelection extends Fragment {
 
                     showToast("Bitte überprügen Sie die IP Adresse. Es kann keine Verbindung hergestellt werden");
 
-                } else if (tableName != "Bitte wählen:") {
+                } else if (tableName != "") {
+
+                    if(isOrderPaidAtTheSelectedTable(tableName)){
+                        MainActivity.orderIsPaid = true;
+                        new CreatNewOrder().execute();
+                    } else {
+                        MainActivity.orderIsPaid = false;
+                    }
 
                     ItemSelect fragment = new ItemSelect();
                     FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
@@ -312,7 +325,96 @@ public class TableSelection extends Fragment {
         }
     }
 
-    private void isOrderPaidAtTheSelectedTable(String tableName){
+    private class CreatNewOrder extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            RestTemplate restTemplate = new RestTemplate();
+
+
+            //TODO: Testen ob das mit der antwort des Servers klapppt.
+            try {
+                Order order = new Order(MainActivity.selectedTable.getTableID());
+                URI uri = restTemplate.postForLocation(url + "/order/", order, Order.class);
+                ResponseEntity response = restTemplate.getForEntity(uri, Order.class);
+                Integer orderId = (Integer)response.getBody();
+                System.out.println(orderId);
+                MainActivity.newOrderID = orderId;
+
+
+            } catch (HttpClientErrorException e){
+
+                text = e.getResponseBodyAsString();
+                return null;
+            }catch (Exception e){
+
+                text = "undefinierter Fehler";
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            showToast(text);
+
+
+        }
+    }
+
+    private class GetAllOrderedItems extends AsyncTask<Void,Void,ArrayList<OrderedItem>> {
+
+        @Override
+        protected ArrayList<OrderedItem> doInBackground(Void... params) {
+
+            RestTemplate restTemplate = new RestTemplate();
+
+
+            try {
+                ResponseEntity<ArrayList<OrderedItem>> responseEntity =
+                        restTemplate.exchange
+                                ( MainActivity.url + "/orderedItems/", HttpMethod.GET,
+                                        null, new ParameterizedTypeReference<ArrayList<OrderedItem>>() {});
+
+                MainActivity.orderedItems = responseEntity.getBody();
+                text = null;
+
+                return MainActivity.orderedItems;
+
+            } catch (HttpClientErrorException e){
+                text = e.getResponseBodyAsString();
+                return null;
+            } catch (ResourceAccessException e) {
+                text = "Es konnte keine Verbindung aufgebaut werden.";
+                return null;
+            }
+            catch (Exception e){
+                text ="Ein Unbekannter Fehler ist aufgetreten";
+                return null;
+            }
+        }
+
+        protected void onPostExecute( ArrayList<OrderedItem> orderedItems) {
+            super.onPostExecute(orderedItems);
+
+            if(text != null){
+                showToast(text);
+                text = null;
+            }
+
+            if (orderedItems != null) {
+                MainActivity.orderedItems = orderedItems;
+            }
+
+        }
+    }
+
+
+    private boolean isOrderPaidAtTheSelectedTable(String tableName){
+
 
         // Request if there is a table selected
         if(tableName != "") {
@@ -330,9 +432,9 @@ public class TableSelection extends Fragment {
 
                         // save the orderItems
                         if (!o.isPaid() && t.getTableID() == o.getTable()) {
-
-                            MainActivity.orderItemIDs = Order.splitItemIDString(o.getItems());
+                            new GetAllOrderedItems().execute();
                             MainActivity.selectedOrderID = o.getOrderID();
+                            return false;
 
                         }
 
@@ -341,7 +443,9 @@ public class TableSelection extends Fragment {
                 }
 
             }
+
         }
+        return true;
     }
 
     private void showToast(String text){

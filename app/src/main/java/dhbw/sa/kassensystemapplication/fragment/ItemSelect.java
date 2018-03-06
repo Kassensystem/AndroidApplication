@@ -24,6 +24,7 @@ import dhbw.sa.kassensystemapplication.MainActivity;
 import dhbw.sa.kassensystemapplication.R;
 import dhbw.sa.kassensystemapplication.entity.Item;
 import dhbw.sa.kassensystemapplication.entity.Order;
+import dhbw.sa.kassensystemapplication.entity.OrderedItem;
 
 import static dhbw.sa.kassensystemapplication.MainActivity.url;
 
@@ -123,9 +124,9 @@ public class ItemSelect extends Fragment {
                 rl.addView(quantityTextField);
 
                 // To start the update-Order with already chosen items
-                for (Integer itemID: MainActivity.orderItemIDs){
+                for (OrderedItem orderedItem: MainActivity.orderedItems){
 
-                    if(itemID == MainActivity.allItems.get(i).getItemID()){
+                    if(orderedItem.getItemID() == MainActivity.allItems.get(i).getItemID()){
 
                         int number = Integer.parseInt((String)quantityTextField.getText());
                         number++;
@@ -230,13 +231,9 @@ public class ItemSelect extends Fragment {
             @Override
             public void onClick(View view) {
                 isOrderPaid = false;
-                if(MainActivity.selectedOrderID >= 0){
-                    new UpdateOrder().execute();
-                    showTableFragment();
-                } else {
-                    new CreatNewOrder().execute();
-                    showTableFragment();
-                }
+                new UpdateOrder().execute();
+                showTableFragment();
+
 
             }
         });
@@ -245,13 +242,9 @@ public class ItemSelect extends Fragment {
             @Override
             public void onClick(View view) {
                 isOrderPaid = true;
-                if(MainActivity.selectedOrderID >= 0){
-                    new UpdateOrder().execute();
-                    showTableFragment();
-                } else {
-                    new CreatNewOrder().execute();
-                    showTableFragment();
-                }
+                new UpdateOrder().execute();
+                showTableFragment();
+
             }
         });
 
@@ -276,7 +269,7 @@ public class ItemSelect extends Fragment {
                         storeOfSum = (double) ((int) storeOfSum + (Math.round(Math.pow(10, 3) * (storeOfSum - (int) storeOfSum))) / (Math.pow(10, 3)));
 
                         // add the Item to the Order
-                        MainActivity.orderItemIDs.add(MainActivity.allItems.get(i).getItemID());
+                        MainActivity.orderedItems.add(new OrderedItem(MainActivity.selectedOrderID,MainActivity.allItems.get(i).getItemID()));
 
                         break;
                     }
@@ -298,12 +291,12 @@ public class ItemSelect extends Fragment {
                     storeOfSum = (double) ((int) storeOfSum + (Math.round(Math.pow(10, 3) * (storeOfSum - (int) storeOfSum))) / (Math.pow(10, 3)));
 
                     // Search in the Order for the item
-                    for(Integer integer: MainActivity.orderItemIDs){
+                    for(OrderedItem orderedItem: MainActivity.orderedItems){
 
                         // if there is the Item, it will be delete from this Order
-                        if(integer == MainActivity.allItems.get(i).getItemID()){
+                        if(orderedItem.getItemID() == MainActivity.allItems.get(i).getItemID()){
 
-                            MainActivity.orderItemIDs.remove(integer);
+                            MainActivity.orderItemIDs.remove(orderedItem);
                             break;
 
                         }
@@ -327,48 +320,7 @@ public class ItemSelect extends Fragment {
 
     }
 
-    private class CreatNewOrder extends AsyncTask<Void, Void, Void> {
-
-    @Override
-    protected Void doInBackground(Void... params) {
-
-        RestTemplate restTemplate = new RestTemplate();
-
-        try {
-            String itemIDs = Order.joinIntIDsIntoString(MainActivity.orderItemIDs);
-            System.out.println(itemIDs);
-            int tableID = MainActivity.selectedTable.getTableID();
-            System.out.println(tableID);
-            double price = storeOfSum;
-            System.out.println(price);
-
-            Order order = new Order(itemIDs, tableID, price, isOrderPaid);
-
-            //Order übertragen
-            // TODO Das Datum kann nicht übertragen werden. Wird momentan auf controllerseite erzeugt.
-            restTemplate.postForLocation(url + "/order/", order, Order.class);
-
-        } catch (HttpClientErrorException e){
-
-            text = e.getResponseBodyAsString();
-            return null;
-        }catch (Exception e){
-
-            text = "undefinierter Fehler";
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    @Override
-    protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-
-            showToast(text);
-
-
-        }
-    }
+    //TODO: Wie soll die Order Upgedated werden?
 
     private class UpdateOrder extends AsyncTask<Void, Void, Void> {
 
@@ -385,8 +337,8 @@ public class ItemSelect extends Fragment {
                 double price = storeOfSum;
                 System.out.println(price);
                 Order order = new Order(MainActivity.selectedOrderID, itemIDs, tableID, price, null, isOrderPaid);
+
                 //Order übertragen
-                // TODO Das Datum kann nicht übertragen werden. Wird momentan auf controllerseite erzeugt.
                 restTemplate.put(url + "/order/" + order.getOrderID(), order);
 
             } catch (HttpClientErrorException e){

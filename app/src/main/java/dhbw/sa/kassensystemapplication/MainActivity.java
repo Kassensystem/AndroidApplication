@@ -35,6 +35,7 @@ import java.util.ArrayList;
 
 import dhbw.sa.kassensystemapplication.entity.Item;
 import dhbw.sa.kassensystemapplication.entity.Order;
+import dhbw.sa.kassensystemapplication.entity.OrderedItem;
 import dhbw.sa.kassensystemapplication.entity.Table;
 import dhbw.sa.kassensystemapplication.fragment.TableSelection;
 import dhbw.sa.kassensystemapplication.fragment.URL_Einstellen;
@@ -46,8 +47,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public static ArrayList<Item> allItems = new ArrayList<>();
     public static ArrayList<Order> allOrders = new ArrayList<>();
     public static ArrayList<Integer> orderItemIDs = new ArrayList<>();
+    public static ArrayList<OrderedItem> orderedItems = new ArrayList<>();
     public static Table selectedTable;
-    public static int selectedOrderID = -1;
+    public static int selectedOrderID = -1; // Fällt wahrscheinlich raus
+    public static int newOrderID;
+    public static boolean orderIsPaid;
 
     // The variables to get the connection with the server
     public static String ip = null;

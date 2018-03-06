@@ -94,6 +94,12 @@ public class Order {
         this.paid = paid;
     }
 
+    public Order(int tableID) {
+
+        this.tableID = tableID;
+
+    }
+
 
     /*Getter*/
 
