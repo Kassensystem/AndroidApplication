@@ -74,4 +74,8 @@ public class OrderedItem {
         this.itemProduced = true;
     }
 
+    public void setItemIsPaid(){
+        this.itemPaid = true;
+    }
+
 }

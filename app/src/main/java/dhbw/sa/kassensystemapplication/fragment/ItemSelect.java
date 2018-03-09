@@ -275,7 +275,7 @@ public class ItemSelect extends Fragment {
                         storeOfSum = (double) ((int) storeOfSum + (Math.round(Math.pow(10, 3) * (storeOfSum - (int) storeOfSum))) / (Math.pow(10, 3)));
 
                         // add the Item to the Order
-                        orderedItems.add(new OrderedItem(MainActivity.newOrderID,MainActivity.allItems.get(i).getItemID()));
+                        orderedItems.add(new OrderedItem(MainActivity.selectedOrderID,MainActivity.allItems.get(i).getItemID()));
 
                         break;
                     }

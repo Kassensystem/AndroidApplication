@@ -329,14 +329,12 @@ public class TableSelection extends Fragment {
             RestTemplate restTemplate = new RestTemplate();
 
 
-            //TODO: Testen ob das mit der antwort des Servers klapppt.
             try {
                 Order order = new Order(MainActivity.selectedTable.getTableID());
                 URI uri = restTemplate.postForLocation(url + "/order/", order, Order.class);
-                //ResponseEntity response = restTemplate.getForEntity(uri, Order.class);
                 Integer orderId = Integer.parseInt(uri.toString());
                 System.out.println("--------------------------------------------------------------\n \n \n \n"+orderId);
-                MainActivity.newOrderID = orderId;
+                MainActivity.selectedOrderID = orderId;
 
 
             } catch (HttpClientErrorException e){

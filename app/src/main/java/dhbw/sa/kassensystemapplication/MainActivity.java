@@ -49,8 +49,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public static ArrayList<Integer> orderItemIDs = new ArrayList<>();
     public static ArrayList<OrderedItem> orderedItems = new ArrayList<>();
     public static Table selectedTable;
-    public static int selectedOrderID = -1; // Fällt wahrscheinlich raus
-    public static int newOrderID;
+    public static int selectedOrderID;
     public static boolean orderIsPaid;
 
     // The variables to get the connection with the server
