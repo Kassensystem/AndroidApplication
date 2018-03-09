@@ -1,8 +1,9 @@
 package dhbw.sa.kassensystemapplication;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
+import android.content.pm.ActivityInfo;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
@@ -10,64 +11,96 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.Spinner;
 import android.widget.Toast;
 
-import org.apache.http.params.HttpParams;
-import org.joda.time.DateTime;
-import org.json.JSONObject;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestTemplate;
-
-import java.io.DataOutput;
-import java.io.DataOutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 
+import dhbw.sa.kassensystemapplication.entity.Category;
 import dhbw.sa.kassensystemapplication.entity.Item;
 import dhbw.sa.kassensystemapplication.entity.Order;
 import dhbw.sa.kassensystemapplication.entity.Table;
 import dhbw.sa.kassensystemapplication.fragment.TableSelection;
-import dhbw.sa.kassensystemapplication.fragment.URL_Einstellen;
+import dhbw.sa.kassensystemapplication.fragment.adjustUrl;
+
+/**
+ * Diese Klasse dient als Container (Hintergrund) für alle anderen Klassen.
+ * Zusätzlich werden in dieser Klasse alle Informationen die von der Datenbank empfangen werden, gespeichert.
+ * @author Daniel Schifano
+ * @version 1.0
+ */
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
     //information which will/are communicate/d with the Server
+    /**
+     * Liste die alle Tische der Datenbank beinhaltet.
+     */
     public static ArrayList<Table> allTables = new ArrayList<>();
+    /**
+     * Liste die alle Artikel der Datenbank beinhaltet.
+     */
     public static ArrayList<Item> allItems = new ArrayList<>();
+    /**
+     * Liste die alle Bestellungen der Datenbank beinhaltet.
+     */
     public static ArrayList<Order> allOrders = new ArrayList<>();
+    /**
+     * Liste die alle "Kategorien" der Datenbank beinhaltet.
+     */
+    public static ArrayList<Category> allCategories = new ArrayList<>();
+    /**
+     * Liste die alle ArtikelIDs einer Bestellung der Datenbank beinhaltet.
+     */
     public static ArrayList<Integer> orderItemIDs = new ArrayList<>();
+    /**
+     * Der Tisch an dem die Bestellung stattfindet.
+     */
     public static Table selectedTable;
+    /**
+     * Zwischenspeicher der ausgewählten BestellungsID.
+     */
     public static int selectedOrderID = -1;
 
     // The variables to get the connection with the server
+    /**
+     * Speichert die IP-Adresse des Servers.
+     */
     public static String ip = null;
+    /**
+     * Speichert die URL des Servers.
+     */
     public static String url = null;
+    /**
+     * Der Hintergrund für alle weiteren Klassen wird hier gespeichert
+     */
+    public static Context context;
 
     // variables
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle toggle;
-
-    public static Context context;
-
-
+    public static int widthPixels = 0;
+    public static int heigthPixels = 0;
 
 
+    /**
+     * Diese Methode wird aufgerufen wenn die App gestartet wird. Dabei wird das Layout(Hintergrund) für alle weiteren Klassen initialisiert.
+     * @param savedInstanceState Gibt an in welchem Abschnitt des Lebenszyklus die App sich befindet. Ob sie z.B. geschlossen wurde oder gestartet wurde.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        //Set the Activity (the complete App) to Portrait
+        this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         context = this.getApplicationContext();
+
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        widthPixels = metrics.widthPixels;
+        heigthPixels = metrics.heightPixels;
 
         //Load the URL. If there is non, set URL standard
         if (!loadURL()){
@@ -95,12 +128,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     }
 
+    /**
+     * Methode, die den übergebenen Text auf dem Smartphone darstellt.
+     * @param handoverText Der Text welcher dargestellt werden soll.
+     */
     public void showToast(String handoverText){
 
         Toast.makeText(this, handoverText, Toast.LENGTH_LONG).show();
 
     }
 
+    /**
+     * Mithilfe dieser Methode wird der Button initialisiert.
+     *
+     * @param item Der Button des Navigation Drawer.
+     * @return true, wenn die Methode richtig abgearbeitet werden kann.
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
@@ -111,16 +154,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return super.onOptionsItemSelected(item);
     }
 
+
+    /**
+     * Mit dieser Funktion werden die verschiedenen Klassen (Fragments) die im Navigation-Drawer auswählbar sind aufgerufen.
+     * @param item Das item das in dem Navigation-Drawer ausgewählt/angeklickt wurde
+     * @return true, wenn die Methode ohne Fehler abgearbeitet werden konnte
+     */
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
+        // which item is chosen
         if (id == R.id.nav_URL) {
 
             setTitle("URL Einstellen");
-            URL_Einstellen fragment = new URL_Einstellen();
+            adjustUrl fragment = new adjustUrl();
             FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
             fragmentTransaction.replace(R.id.frame, fragment);
             fragmentTransaction.commit();
@@ -148,6 +198,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return true;
     }
 
+    /**
+     * In dieser Methode werden die IP-Adresse und die URL geladen.
+     * Hierfür wird in der Klasse AdjustUrl die IP-Adresse und die URL über den Lebenszyklus der Applikation gespeichert
+     * @return true, wenn bereits ein URL gespeichert wurde. False wenn noch kein URL gespeichert wurde
+     */
     public boolean loadURL(){
 
         // Get the ip from the "store" of the app
@@ -166,3 +221,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
 }
+ /*
+  * TODO: Schauen ob mab das hinbekommt, eine Meldung zu geben ob der Server gerade geschlossen wurde
+  * TODO: SO wie der Moosi gemeint hat, die Anzahl der Artikel darstellen
+  * TODO: Schauen was für Tests es gibt, die ich machen kann.....vorallem mit den Meilensteinen
+  */
