@@ -247,9 +247,8 @@ public class ItemSelect extends Fragment {
         paidBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                isOrderPaid = true;
-                new UpdateOrder().execute();
-                showTableFragment();
+
+                showPayFragment();
 
             }
         });
@@ -377,6 +376,15 @@ public class ItemSelect extends Fragment {
     private void showTableFragment(){
 
         TableSelection fragment = new TableSelection();
+        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.frame, fragment);
+        fragmentTransaction.commit();
+
+    }
+
+    private void showPayFragment(){
+
+        PayOderedItems fragment = new PayOderedItems();
         FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.frame, fragment);
         fragmentTransaction.commit();
