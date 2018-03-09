@@ -16,8 +16,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.joda.time.DateTime;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.ArrayList;
 
 import dhbw.sa.kassensystemapplication.ItemSelection;
 import dhbw.sa.kassensystemapplication.MainActivity;
@@ -26,6 +31,7 @@ import dhbw.sa.kassensystemapplication.entity.Item;
 import dhbw.sa.kassensystemapplication.entity.Order;
 import dhbw.sa.kassensystemapplication.entity.OrderedItem;
 
+import static dhbw.sa.kassensystemapplication.MainActivity.orderedItems;
 import static dhbw.sa.kassensystemapplication.MainActivity.url;
 
 public class ItemSelect extends Fragment {
@@ -124,7 +130,7 @@ public class ItemSelect extends Fragment {
                 rl.addView(quantityTextField);
 
                 // To start the update-Order with already chosen items
-                for (OrderedItem orderedItem: MainActivity.orderedItems){
+                for (OrderedItem orderedItem: orderedItems){
 
                     if(orderedItem.getItemID() == MainActivity.allItems.get(i).getItemID()){
 
@@ -269,7 +275,7 @@ public class ItemSelect extends Fragment {
                         storeOfSum = (double) ((int) storeOfSum + (Math.round(Math.pow(10, 3) * (storeOfSum - (int) storeOfSum))) / (Math.pow(10, 3)));
 
                         // add the Item to the Order
-                        MainActivity.orderedItems.add(new OrderedItem(MainActivity.selectedOrderID,MainActivity.allItems.get(i).getItemID()));
+                        orderedItems.add(new OrderedItem(MainActivity.newOrderID,MainActivity.allItems.get(i).getItemID()));
 
                         break;
                     }
@@ -291,7 +297,7 @@ public class ItemSelect extends Fragment {
                     storeOfSum = (double) ((int) storeOfSum + (Math.round(Math.pow(10, 3) * (storeOfSum - (int) storeOfSum))) / (Math.pow(10, 3)));
 
                     // Search in the Order for the item
-                    for(OrderedItem orderedItem: MainActivity.orderedItems){
+                    for(OrderedItem orderedItem: orderedItems){
 
                         // if there is the Item, it will be delete from this Order
                         if(orderedItem.getItemID() == MainActivity.allItems.get(i).getItemID()){
@@ -330,19 +336,24 @@ public class ItemSelect extends Fragment {
             RestTemplate restTemplate = new RestTemplate();
 
             try {
-                String itemIDs = Order.joinIntIDsIntoString(MainActivity.orderItemIDs);
-                System.out.println(itemIDs);
+                //String itemIDs = Order.joinIntIDsIntoString(MainActivity.orderItemIDs);
+                //System.out.println(itemIDs);
                 int tableID = MainActivity.selectedTable.getTableID();
                 System.out.println(tableID);
                 double price = storeOfSum;
                 System.out.println(price);
-                Order order = new Order(MainActivity.selectedOrderID, itemIDs, tableID, price, null, isOrderPaid);
+                //Order order = new Order(MainActivity.selectedOrderID, itemIDs, tableID, price, null, isOrderPaid);
 
                 //Order übertragen
-                restTemplate.put(url + "/order/" + order.getOrderID(), order);
+                restTemplate.postForLocation(url + "/orderedItem/", MainActivity.orderedItems,
+                        HttpMethod.GET,
+                        new ParameterizedTypeReference<ArrayList<OrderedItem>>(){});
+
+
 
             } catch (HttpClientErrorException e){
                 text = e.getResponseBodyAsString();
+                e.printStackTrace();
                 return null;
             }catch (Exception e){
                 text = "undefinierter Fehler";

@@ -302,19 +302,19 @@ public class ItemSelection extends AppCompatActivity {
             RestTemplate restTemplate = new RestTemplate();
 
             try {
-                String itemIDs = Order.joinIDsIntoString(orderItems);
-                System.out.println(itemIDs);
+                //String itemIDs = Order.joinIDsIntoString(orderItems);
+                //System.out.println(itemIDs);
                 int tableID = ItemSelection.tableID;
                 System.out.println(tableID);
                 double price = ItemSelection.price;
                 System.out.println(price);
                 DateTime date = DateTime.now();
                 System.out.println(date.toString());
-                Order order = new Order(itemIDs, tableID, price, orderIsPaid);
+                //Order order = new Order(itemIDs, tableID, price, orderIsPaid);
 
                 //Order übertragen
                 // TODO Das Datum kann nicht übertragen werden. Wird momentan auf controllerseite erzeugt.
-                restTemplate.postForLocation(url + "/order/", order, Order.class);
+                //restTemplate.postForLocation(url + "/order/", order, Order.class);
 
             }catch (Exception e){
                 e.printStackTrace();
@@ -332,8 +332,8 @@ public class ItemSelection extends AppCompatActivity {
             RestTemplate restTemplate = new RestTemplate();
 
             try {
-                String itemIDs = Order.joinIDsIntoString(orderItems);
-                System.out.println(itemIDs);
+                //String itemIDs = Order.joinIDsIntoString(orderItems);
+                //System.out.println(itemIDs);
                 int tableID = ItemSelection.tableID;
                 System.out.println(tableID);
                 double price = ItemSelection.price;
@@ -341,11 +341,11 @@ public class ItemSelection extends AppCompatActivity {
                 DateTime date = DateTime.now();
                 System.out.println(date.toString());
                 System.out.println("---------------------------------\n" + orderIsPaid);
-                Order order = new Order(updatableOrderID, itemIDs, tableID, price, null, orderIsPaid);
+                //Order order = new Order(updatableOrderID, itemIDs, tableID, price, null, orderIsPaid);
 
                 //Order übertragen
                 // TODO Das Datum kann nicht übertragen werden. Wird momentan auf controllerseite erzeugt.
-                restTemplate.put(url + "/order/" + order.getOrderID(), order);
+                //restTemplate.put(url + "/order/" + order.getOrderID(), order);
 
             }catch (Exception e){
                 e.printStackTrace();

@@ -1,11 +1,14 @@
 package dhbw.sa.kassensystemapplication.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * Model für einen Datensatz der Datenbanktabelle tables.
  *
  * @author Marvin Mai
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Table {
     private int tableID;
     private String name;

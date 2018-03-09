@@ -1,11 +1,7 @@
 package dhbw.sa.kassensystemapplication.fragment;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
@@ -20,9 +16,7 @@ import android.widget.Toast;
 import org.joda.time.DateTime;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
@@ -39,7 +33,6 @@ import dhbw.sa.kassensystemapplication.entity.Order;
 import dhbw.sa.kassensystemapplication.entity.OrderedItem;
 import dhbw.sa.kassensystemapplication.entity.Table;
 
-import static dhbw.sa.kassensystemapplication.MainActivity.selectedTable;
 import static dhbw.sa.kassensystemapplication.MainActivity.url;
 
 
@@ -158,7 +151,8 @@ public class TableSelection extends Fragment {
                 return null;
             }
             catch (Exception e){
-                text ="Ein Unbekannter Fehler ist aufgetreten";
+                text ="Ein Unbekannter Fehler ist aufgetreten Table";
+                e.printStackTrace();
                 return null;
             }
         }
@@ -239,7 +233,8 @@ public class TableSelection extends Fragment {
                 return null;
             }
             catch (Exception e){
-                text ="Ein Unbekannter Fehler ist aufgetreten";
+                text ="Ein Unbekannter Fehler ist aufgetreten Item";
+                e.printStackTrace();
                 return null;
             }
         }
@@ -280,7 +275,7 @@ public class TableSelection extends Fragment {
                         int id = (Integer)map.get("orderID");
 
                         Order order = new Order (id,
-                                (String)map.get("itemIDs"),
+                                //(String)map.get("itemIDs"),
                                 (int)map.get("tableID"),
                                 (double)map.get("price"),
                                 date,
@@ -301,7 +296,8 @@ public class TableSelection extends Fragment {
                 return null;
             }
             catch (Exception e){
-                text ="Ein Unbekannter Fehler ist aufgetreten";
+                text ="Ein Unbekannter Fehler ist aufgetreten Order";
+                e.printStackTrace();
                 return null;
             }
         }
@@ -337,9 +333,9 @@ public class TableSelection extends Fragment {
             try {
                 Order order = new Order(MainActivity.selectedTable.getTableID());
                 URI uri = restTemplate.postForLocation(url + "/order/", order, Order.class);
-                ResponseEntity response = restTemplate.getForEntity(uri, Order.class);
-                Integer orderId = (Integer)response.getBody();
-                System.out.println(orderId);
+                //ResponseEntity response = restTemplate.getForEntity(uri, Order.class);
+                Integer orderId = Integer.parseInt(uri.toString());
+                System.out.println("--------------------------------------------------------------\n \n \n \n"+orderId);
                 MainActivity.newOrderID = orderId;
 
 
@@ -365,7 +361,7 @@ public class TableSelection extends Fragment {
         }
     }
 
-    private class GetAllOrderedItems extends AsyncTask<Void,Void,ArrayList<OrderedItem>> {
+    private class GetOrderedItems extends AsyncTask<Void,Void,ArrayList<OrderedItem>> {
 
         @Override
         protected ArrayList<OrderedItem> doInBackground(Void... params) {
@@ -376,7 +372,7 @@ public class TableSelection extends Fragment {
             try {
                 ResponseEntity<ArrayList<OrderedItem>> responseEntity =
                         restTemplate.exchange
-                                ( MainActivity.url + "/orderedItems/", HttpMethod.GET,
+                                ( MainActivity.url + "/orderedItems/"+MainActivity.selectedOrderID, HttpMethod.GET,
                                         null, new ParameterizedTypeReference<ArrayList<OrderedItem>>() {});
 
                 MainActivity.orderedItems = responseEntity.getBody();
@@ -393,6 +389,7 @@ public class TableSelection extends Fragment {
             }
             catch (Exception e){
                 text ="Ein Unbekannter Fehler ist aufgetreten";
+                e.printStackTrace();
                 return null;
             }
         }
@@ -432,7 +429,7 @@ public class TableSelection extends Fragment {
 
                         // save the orderItems
                         if (!o.isPaid() && t.getTableID() == o.getTable()) {
-                            new GetAllOrderedItems().execute();
+                            new GetOrderedItems().execute();
                             MainActivity.selectedOrderID = o.getOrderID();
                             return false;
 
@@ -449,9 +446,10 @@ public class TableSelection extends Fragment {
     }
 
     private void showToast(String text){
-
-        Toast.makeText(MainActivity.context, text, Toast.LENGTH_LONG).show();
-        System.out.println(text);
+        if(text != null) {
+            Toast.makeText(MainActivity.context, text, Toast.LENGTH_LONG).show();
+            System.out.println(text);
+        }
     }
 
 
