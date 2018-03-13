@@ -15,20 +15,16 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.joda.time.DateTime;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 
-import dhbw.sa.kassensystemapplication.ItemSelection;
 import dhbw.sa.kassensystemapplication.MainActivity;
 import dhbw.sa.kassensystemapplication.R;
 import dhbw.sa.kassensystemapplication.entity.Item;
-import dhbw.sa.kassensystemapplication.entity.Order;
 import dhbw.sa.kassensystemapplication.entity.OrderedItem;
 
 import static dhbw.sa.kassensystemapplication.MainActivity.orderedItems;
@@ -40,7 +36,6 @@ public class ItemSelect extends Fragment {
     private TextView sum;
     private Button orderBtn;
     private Button paidBtn;
-    private boolean orderIsPaid;
     public static String text = null;
 
     // variables
@@ -130,12 +125,14 @@ public class ItemSelect extends Fragment {
                 rl.addView(quantityTextField);
 
                 // To start the update-Order with already chosen items
+                int startUpdate = 0;
                 for (OrderedItem orderedItem: orderedItems){
 
                     if(orderedItem.getItemID() == MainActivity.allItems.get(i).getItemID()){
 
                         int number = Integer.parseInt((String)quantityTextField.getText());
                         number++;
+                        startUpdate++;
 
                         int numberOfInventory = Integer.parseInt((String)inventoryTextView.getText());
                         numberOfInventory--;
@@ -203,6 +200,7 @@ public class ItemSelect extends Fragment {
                 });
 
                 //Listener for the Button: - (The selected item will be remove from the order)
+                final int finalStartUpdate = startUpdate;
                 minus.setOnClickListener(new View.OnClickListener() {
 
                     @Override
@@ -221,6 +219,9 @@ public class ItemSelect extends Fragment {
                             // Update the sumTextView and set the TextView Sum
                             double result = UpdateSum(false, (String)nameTextView.getText());
                             sum.setText(Double.toString(result) + " €");
+
+
+
                         }
 
                         // Set the TextViews quantity and inventory
@@ -257,7 +258,7 @@ public class ItemSelect extends Fragment {
     }
 
     //update the sumTextView in the Fragment
-    private double UpdateSum(boolean isAdd, String itemName){
+    public double UpdateSum(boolean isAdd, String itemName){
 
         double result = 0;
 
@@ -285,34 +286,32 @@ public class ItemSelect extends Fragment {
 
         //subtract
         } else {
-
+            OrderedItem orderedItem = null;
             // Search in all items, to get the retailprice
             for (int i = 0; i < MainActivity.allItems.size(); i++) {
 
                 // Search if one item from all items got the same name
-                if (MainActivity.allItems.get(i).getName().equalsIgnoreCase(itemName)) {
+                if (MainActivity.allItems.get(i).getName().equals(itemName)) {
 
                     storeOfSum = storeOfSum - (MainActivity.allItems.get(i).getRetailprice());
                     storeOfSum = (double) ((int) storeOfSum + (Math.round(Math.pow(10, 3) * (storeOfSum - (int) storeOfSum))) / (Math.pow(10, 3)));
 
-                    // Search in the Order for the item
-                    for(OrderedItem orderedItem: orderedItems){
+                    for (OrderedItem item: MainActivity.orderedItems){
 
-                        // if there is the Item, it will be delete from this Order
-                        if(orderedItem.getItemID() == MainActivity.allItems.get(i).getItemID()){
+                        if(item.getItemID() == MainActivity.allItems.get(i).getItemID()){
 
-                            MainActivity.orderItemIDs.remove(orderedItem);
+                            orderedItem = item;
                             break;
 
                         }
 
                     }
-
-                    break;
-
                 }
 
             }
+
+
+            MainActivity.allItems.remove(orderedItem);
 
             result = storeOfSum;
 
@@ -335,8 +334,7 @@ public class ItemSelect extends Fragment {
             RestTemplate restTemplate = new RestTemplate();
 
             try {
-                //String itemIDs = Order.joinIntIDsIntoString(MainActivity.orderItemIDs);
-                //System.out.println(itemIDs);
+
                 int tableID = MainActivity.selectedTable.getTableID();
                 System.out.println(tableID);
                 double price = storeOfSum;
@@ -345,10 +343,10 @@ public class ItemSelect extends Fragment {
 
                 //Order übertragen
                 restTemplate.postForLocation(url + "/orderedItem/", MainActivity.orderedItems,
-                        HttpMethod.GET,
+                        HttpMethod.POST,
                         new ParameterizedTypeReference<ArrayList<OrderedItem>>(){});
 
-
+                MainActivity.orderedItems.clear();
 
             } catch (HttpClientErrorException e){
                 text = e.getResponseBodyAsString();
@@ -384,7 +382,7 @@ public class ItemSelect extends Fragment {
 
     private void showPayFragment(){
 
-        PayOderedItems fragment = new PayOderedItems();
+        PayOrder fragment = new PayOrder(storeOfSum);
         FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.frame, fragment);
         fragmentTransaction.commit();
@@ -399,6 +397,19 @@ public class ItemSelect extends Fragment {
         }
 
 
+    }
+
+    public static OrderedItem findOrderedItemByItemID(int ID){
+
+        for(OrderedItem orderItem: MainActivity.orderedItems){
+
+            if(orderItem.getItemID() == ID){
+                return orderItem;
+            }
+
+        }
+
+        return null;
     }
 
 }

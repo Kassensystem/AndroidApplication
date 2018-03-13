@@ -74,8 +74,8 @@ public class OrderedItem {
         this.itemProduced = true;
     }
 
-    public void setItemIsPaid(){
-        this.itemPaid = true;
+    public void setItemIsPaid(boolean itemIsPaid){
+        this.itemPaid = itemIsPaid;
     }
 
 }

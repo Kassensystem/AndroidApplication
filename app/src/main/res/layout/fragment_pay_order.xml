@@ -1,0 +1,66 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="dhbw.sa.kassensystemapplication.fragment.PayOrder">
+
+
+    <RelativeLayout
+        android:id="@+id/activity_pay_order"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <Button
+            android:id="@+id/payOrderedItemsButton"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginBottom="5dp"
+            android:layout_marginEnd="10dp"
+            android:text="Bezahlen" />
+
+        <CheckBox
+            android:id="@+id/payAllcheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/priceToPay"
+            android:layout_alignParentStart="true"
+            android:layout_marginBottom="10dp"
+            android:layout_marginStart="10dp"
+            android:text="Separat Bezahlen" />
+
+        <CheckBox
+            android:id="@+id/printerServicecheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/priceToPay"
+            android:layout_alignParentEnd="true"
+            android:layout_marginBottom="10dp"
+            android:layout_marginEnd="10dp"
+            android:text="Kundenbeleg"/>
+
+        <TextView
+            android:id="@+id/priceToPay"
+            android:layout_width="220dp"
+            android:layout_height="40dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignStart="@+id/payAllcheckBox"
+            android:layout_marginRight="50dp"
+            android:layout_marginBottom="5dp"
+            android:text="priceToPay" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/payAllcheckBox"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true">
+
+            <RelativeLayout
+                android:id="@+id/rlPayOrder"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+        </ScrollView>
+    </RelativeLayout>
+</FrameLayout>
