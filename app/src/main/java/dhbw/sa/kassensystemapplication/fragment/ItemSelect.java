@@ -3,8 +3,11 @@ package dhbw.sa.kassensystemapplication.fragment;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.constraint.ConstraintLayout;
+import android.support.constraint.ConstraintSet;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,31 +15,58 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
+import org.joda.time.DateTime;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 
+
+import dhbw.sa.kassensystemapplication.entity.OrderedItem;
+import static dhbw.sa.kassensystemapplication.MainActivity.orderedItems;
 import dhbw.sa.kassensystemapplication.MainActivity;
 import dhbw.sa.kassensystemapplication.R;
 import dhbw.sa.kassensystemapplication.entity.Item;
-import dhbw.sa.kassensystemapplication.entity.OrderedItem;
+import dhbw.sa.kassensystemapplication.entity.Order;
+import dhbw.sa.kassensystemapplication.entity.Table;
 
-import static dhbw.sa.kassensystemapplication.MainActivity.orderedItems;
+import static dhbw.sa.kassensystemapplication.MainActivity.allItems;
 import static dhbw.sa.kassensystemapplication.MainActivity.url;
+import static dhbw.sa.kassensystemapplication.MainActivity.widthPixels;
 
+/**
+ * In dieser Klasse wird der Bildschirm initialisiert, auf dem die Bedienung auswählen kann, welche Artikel einer Bestellung hinzugefügt werden kann.
+ * Ebenfalls werden in dieser Klasse die Buttons "Bezahlen" und "Bestellen" initialisiert. Durch diese wird die Kommunikation mit dem Server gestartet.
+ * @author Daniel Schifano
+ */
 public class ItemSelect extends Fragment {
 
     // Nodes from the layout
     private TextView sum;
     private Button orderBtn;
     private Button paidBtn;
+
+    /**
+     * Speichert die Fehlermeldung des Servers.
+     */
     public static String text = null;
+    /**
+     * Gibt an, wie lang der String maximal sein darf, bevor eine neue Zeile angefangen werden muss.
+     */
+    private int lengthOfStringTillSplit1 = 18;
+    /**
+     * Gibt an, wie lang der String maximal sein darf, bevor eine dritte Zeile angefangen werden muss.
+     */
+    private int lengthOfStringTillSplit2 = 2*lengthOfStringTillSplit1;
 
     // variables
     private double storeOfSum;
@@ -47,7 +77,16 @@ public class ItemSelect extends Fragment {
     public ItemSelect() {
 
     }
-
+    /**
+     * Diese Methode wird aufgerufen, wenn das Fragment erstellt wird.
+     * Dabei werden alle Artikel (mit ihren Informationen Preis und Menge) die in der Datenbank als verfügbar hinterlegt sind dargestellt.
+     * Zusätzlich werden die Befehle zur Übermittlung der Bestellung an den Server hier gestartet.
+     *
+     * @param inflater Instantiiert ein XML-Layout in ein passendes View Objekt
+     * @param container Erlaubt den Zugriff auf container Eigenschaften
+     * @param savedInstanceState Gibt an in welchem Abschnitt des Lebenszyklus die App sich befindet. Ob sie z.B. geschlossen wurde oder gestartet wurde.
+     * @return View die dargestellt werden soll
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -65,8 +104,12 @@ public class ItemSelect extends Fragment {
         float posY = pix;
 
         // declare the relative Layout. There the Nodes for the Order get added.
-        RelativeLayout rl = (RelativeLayout) v.findViewById(R.id.rl);
-        ViewGroup.LayoutParams params = rl.getLayoutParams();
+        RelativeLayout relativeLayout = (RelativeLayout) v.findViewById(R.id.rl);
+        ViewGroup.LayoutParams params = relativeLayout.getLayoutParams();
+
+        ScrollView scrollView = (ScrollView) v.findViewById(R.id.scrollView2);
+        ViewGroup.LayoutParams paramsScrollView = scrollView.getLayoutParams();
+        paramsScrollView.height = (MainActivity.heigthPixels)-(22*pix);
 
         //sort the Items which are not available. So the Scroll View is not to long.
         for (Item item: MainActivity.allItems){
@@ -75,12 +118,17 @@ public class ItemSelect extends Fragment {
                 sizeOfRelativeLayout++;
 
         }
+        if(allItems.size() == 0){
+            showToast("Es befinden sich keine Artikel in der Datenbank.");
+        }
 
-        params.height = sizeOfRelativeLayout*5*pix;
+        params.height = sizeOfRelativeLayout*5*pix+8;
 
         // Change the Color of the TextView Sum
         sum.setTextColor(Color.RED);
-        sum.setTextSize(pix*2);
+        sum.setTextSize((float) (pix*1.5));
+
+
 
         // initialise the Nodes: TextView and the Buttons
         for(int i = 0; i< MainActivity.allItems.size(); i++){
@@ -88,6 +136,16 @@ public class ItemSelect extends Fragment {
             if(MainActivity.allItems.get(i).isAvailable()) {
 
                 String name = MainActivity.allItems.get(i).getName();
+                if(name.length() > lengthOfStringTillSplit1){
+                    name = name.substring(0,lengthOfStringTillSplit1) + "-\n" + name.substring(lengthOfStringTillSplit1);
+                    if (name.length() > lengthOfStringTillSplit2){
+                        name = name.substring(0,lengthOfStringTillSplit1) + "-\n" + name.substring(lengthOfStringTillSplit1,lengthOfStringTillSplit2) +"-\n" + name.substring(lengthOfStringTillSplit1);
+                    }
+                }
+                int inventory = allItems.get(i).getQuantity();
+                if(inventory>= 1000){
+                    inventory = 999;
+                }
 
                 // Set the Parameter for the TextViews Name, inventory and Quantity
 
@@ -98,34 +156,37 @@ public class ItemSelect extends Fragment {
                 Button plus = new Button(getActivity());
                 Button minus = new Button(getActivity());
 
-                // Params for the TextView txt
-                nameTextView.setLayoutParams(new LinearLayout.LayoutParams(30 * pix, 10 * pix));
-                nameTextView.setText(name);
-                nameTextView.setId(-i);
-                nameTextView.setX(pix / 10);
-                nameTextView.setY(posY);
-                nameTextView.setPadding(pix, pix, pix, pix);
-                rl.addView(nameTextView);
-
-                // Params for the TextView inventory
-                inventoryTextView.setLayoutParams(new LinearLayout.LayoutParams(30*pix,10*pix));
-                inventoryTextView.setText(Integer.toString(MainActivity.allItems.get(i).getQuantity()));
-                inventoryTextView.setX(15 * pix);
-                inventoryTextView.setY(posY);
-                inventoryTextView.setPadding(pix,pix,pix,pix);
-                rl.addView(inventoryTextView);
-
                 // Params for the TextView quantityTextField
                 quantityTextField.setLayoutParams(new LinearLayout.LayoutParams(8 * pix, 10 * pix));
                 quantityTextField.setId(i);
                 quantityTextField.setText("0");
-                quantityTextField.setX(18 * pix);
+                quantityTextField.setX(pix/10);
                 quantityTextField.setY(posY);
                 quantityTextField.setPadding(pix, pix, pix, pix);
-                rl.addView(quantityTextField);
+                relativeLayout.addView(quantityTextField);
+
+                // Params for the TextView txt
+                nameTextView.setLayoutParams(new LinearLayout.LayoutParams(30 * pix, 10 * pix));
+                nameTextView.setText(name);
+                nameTextView.setId(-i);
+                nameTextView.setX(pix*2);
+                nameTextView.setY(posY);
+                nameTextView.setPadding(pix, pix, pix, pix);
+                relativeLayout.addView(nameTextView);
+
+
+
+                // Params for the TextView inventory
+                inventoryTextView.setLayoutParams(new LinearLayout.LayoutParams(30*pix,10*pix));
+                inventoryTextView.setText(Integer.toString(inventory));
+                inventoryTextView.setX(widthPixels-15*pix-pix/2);
+                inventoryTextView.setY(posY);
+                inventoryTextView.setPadding(pix,pix,pix,pix);
+                relativeLayout.addView(inventoryTextView);
 
                 // To start the update-Order with already chosen items
                 int startUpdate = 0;
+
                 for (OrderedItem orderedItem: orderedItems){
 
                     if(orderedItem.getItemID() == MainActivity.allItems.get(i).getItemID()){
@@ -149,21 +210,22 @@ public class ItemSelect extends Fragment {
                 }
 
                 // Set the Parameter for the Buttons plus and minus
-                // Params for the Button: +
-                plus.setLayoutParams(new LinearLayout.LayoutParams(4 * pix, 4 * pix));
-                plus.setText("+");
-                plus.setX(21 * pix);
-                plus.setPadding(pix, pix, pix, pix);
-                plus.setY(posY);
-                rl.addView(plus);
-
                 //Params for the Button: -
                 minus.setLayoutParams(new LinearLayout.LayoutParams(4 * pix, 4 * pix));
                 minus.setText("-");
-                minus.setX(25 * pix);
+                minus.setX(MainActivity.widthPixels-8*pix);
                 minus.setPadding(pix, pix, pix, pix);
                 minus.setY(posY);
-                rl.addView(minus);
+                relativeLayout.addView(minus);
+
+
+                // Params for the Button: +
+                plus.setLayoutParams(new LinearLayout.LayoutParams(4 * pix, 4 * pix));
+                plus.setText("+");
+                plus.setX(widthPixels - 12*pix);
+                plus.setPadding(pix, pix, pix, pix);
+                plus.setY(posY);
+                relativeLayout.addView(plus);
 
                 //The Y-position need to crow with the quantityTextField of Items!
                 posY = posY + 5 * pix;
@@ -179,13 +241,26 @@ public class ItemSelect extends Fragment {
                             // Update the quantity TextView
                             int selectedQuantity = Integer.parseInt((String)quantityTextField.getText());
                             selectedQuantity++;
+                            if(selectedQuantity >= 1000){
+                                selectedQuantity = 999;
+                            }
 
                             // Update the inventory TextView
                             int numberOfInventory = Integer.parseInt((String) inventoryTextView.getText());
                             numberOfInventory--;
+                            if (numberOfInventory == 998){
+                                numberOfInventory = 999;
+                            }
 
                             // Calculate the Sum
-                            double result = UpdateSum(true,(String)nameTextView.getText());
+                            String itemName = (String) nameTextView.getText();
+                            if(itemName.length() >lengthOfStringTillSplit1){
+                                itemName = itemName.substring(0,lengthOfStringTillSplit1) + itemName.substring(lengthOfStringTillSplit1 +2);
+                                if (itemName.length() > 40){
+                                    itemName = itemName.substring(0,lengthOfStringTillSplit2)+itemName.substring(lengthOfStringTillSplit2+2);
+                                }
+                            }
+                            double result = UpdateSum(true,itemName);
 
                             // Set the updated quantity and inventory
                             quantityTextField.setText(Integer.toString(selectedQuantity));
@@ -213,14 +288,25 @@ public class ItemSelect extends Fragment {
                         // request if there is an Item in the Order
                         if (selectedQuantity > 0) {
 
-                            selectedQuantity--;
-                            numberOfInventory++;
 
-                            // Update the sumTextView and set the TextView Sum
-                            double result = UpdateSum(false, (String)nameTextView.getText());
-                            sum.setText(Double.toString(result) + " €");
+                            if(finalStartUpdate < selectedQuantity) {
+                                selectedQuantity--;
+                                numberOfInventory++;
+                                if (numberOfInventory >= 1000) {
+                                    numberOfInventory = 999;
+                                }
 
-
+                                // Update the sumTextView and set the TextView Sum
+                                String itemName = (String) nameTextView.getText();
+                                if (itemName.length() > lengthOfStringTillSplit1) {
+                                    itemName = itemName.substring(0, lengthOfStringTillSplit1) + itemName.substring(lengthOfStringTillSplit1 + 2);
+                                    if (itemName.length() > 40) {
+                                        itemName = itemName.substring(0, lengthOfStringTillSplit2) + itemName.substring(lengthOfStringTillSplit2 + 2);
+                                    }
+                                }
+                                double result = UpdateSum(false, itemName);
+                                sum.setText(Double.toString(result) + " €");
+                            }
 
                         }
 
@@ -259,7 +345,16 @@ public class ItemSelect extends Fragment {
     }
 
     //update the sumTextView in the Fragment
-    public double UpdateSum(boolean isAdd, String itemName){
+
+    /**
+     * In dieser Methode wird der Gesamtpreis der Bestellung errechnet.
+     *
+     * @param isAdd Wurde ein Artikle hinzugefügt oder abgezogen.
+     * @param itemName Welcher Artikel wurde hinzugefügt/abgezogen.
+     * @return Den Gesamtpreis der Bestellung.
+     */
+    private double UpdateSum(boolean isAdd, String itemName){
+
 
         double result = 0;
 
@@ -325,10 +420,18 @@ public class ItemSelect extends Fragment {
 
     }
 
-    //TODO: Wie soll die Order Upgedated werden?
+    /**
+     * Diese Klasse wird dafür verwendet, eine bereits bestehende Bestellung, die mithilfe der Applikation upgedated wurde, an den Server weiterzuleiten.
+     */
 
     private class UpdateOrder extends AsyncTask<Void, Void, Void> {
 
+        /**
+         * Mit dieser Methode wird eine bereits bestehende Bestellung die mithilfe der Applikation upgedated wurde an den Server übermittelt.
+         *
+         * @param params welche Datentypen die Informationen haben, die im Hintergrund bearbeitet werden sollen.
+         * @return gibt null zurück, da Informationen lediglich an den Server geschickt werden.
+         */
         @Override
         protected Void doInBackground(Void... params) {
 
@@ -336,17 +439,10 @@ public class ItemSelect extends Fragment {
 
             try {
 
-                int tableID = MainActivity.selectedTable.getTableID();
-                System.out.println(tableID);
-                double price = storeOfSum;
-                System.out.println(price);
-                //Order order = new Order(MainActivity.selectedOrderID, itemIDs, tableID, price, null, isOrderPaid);
-
                 //Order übertragen
                 restTemplate.postForLocation(url + "/orderedItem/", MainActivity.orderedItems,
                         HttpMethod.POST,
                         new ParameterizedTypeReference<ArrayList<OrderedItem>>(){});
-
 
                 if (!isOrderPaid) {
                     MainActivity.orderedItems.clear();
@@ -354,16 +450,19 @@ public class ItemSelect extends Fragment {
 
             } catch (HttpClientErrorException e){
                 text = e.getResponseBodyAsString();
-                e.printStackTrace();
-                return null;
+
             }catch (Exception e){
-                text = "undefinierter Fehler";
+                text = "Die Verbindung zum Server ist unterbrochen worden!";
                 e.printStackTrace();
             }
 
             return null;
         }
 
+        /**
+         * Falls bei der Übertragung der Bestellung zum Server ein Fehler auftritt, wird mithilfe der ShowToast-Methode dieser Fehler dargestellt.
+         * @param aVoid wird hier nicht benötigt
+         */
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
@@ -374,7 +473,9 @@ public class ItemSelect extends Fragment {
 
 
     }
-
+    /**
+     * Mithilfe dieser Methode wird die Klasse TableSelection aufgerufen und die Klasse ItemSelect wird nicht mehr dargestellt.
+     */
     private void showTableFragment(){
 
         TableSelection fragment = new TableSelection();
@@ -393,6 +494,10 @@ public class ItemSelect extends Fragment {
 
     }
 
+    /**
+     * Methode, die den übergebenen Text auf dem Smartphone darstellt.
+     * @param text Der Text welcher dargestellt werden soll.
+     */
     private void showToast(String text){
 
         if(text != null){

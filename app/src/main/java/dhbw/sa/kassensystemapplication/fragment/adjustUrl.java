@@ -34,15 +34,23 @@ import dhbw.sa.kassensystemapplication.entity.Order;
 import dhbw.sa.kassensystemapplication.entity.Table;
 
 
-public class URL_Einstellen extends Fragment {
+public class adjustUrl extends Fragment {
 
     private Button confirmURL;
     private EditText editTextURL;
 
-    public URL_Einstellen() {
+    public adjustUrl() {
 
     }
 
+    /**
+     * Mit dieser Methode kann die IP-Adresse eingestellt werden.
+     *
+     * @param inflater Instantiiert ein XML-Layout in ein passendes View Objekt
+     * @param container Erlaubt den Zugriff auf container Eigenschaften
+     * @param savedInstanceState Gibt an in welchem Abschnitt des Lebenszyklus die App sich befindet. Ob sie z.B. geschlossen wurde oder gestartet wurde.
+     * @return View die dargestellt werden soll
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {

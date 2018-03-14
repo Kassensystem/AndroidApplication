@@ -28,13 +28,22 @@ import java.util.List;
 
 import dhbw.sa.kassensystemapplication.MainActivity;
 import dhbw.sa.kassensystemapplication.R;
+import dhbw.sa.kassensystemapplication.entity.Category;
 import dhbw.sa.kassensystemapplication.entity.Item;
 import dhbw.sa.kassensystemapplication.entity.Order;
 import dhbw.sa.kassensystemapplication.entity.OrderedItem;
 import dhbw.sa.kassensystemapplication.entity.Table;
 
+
 import static dhbw.sa.kassensystemapplication.MainActivity.orderedItems;
 import static dhbw.sa.kassensystemapplication.MainActivity.url;
+
+
+/**
+ * In dieser Klasse wird der Startbildschirm der Applikation erstellt.
+ * Dieser wird ebenfalls aufgerufen, wenn angefangen wird eine Bestellung aufzugeben.
+ * @author Daniel Schifano
+ */
 
 
 public class TableSelection extends Fragment {
@@ -42,6 +51,9 @@ public class TableSelection extends Fragment {
     // Nodes
     private Button confirmTV;
     private Spinner spinnerTV;
+    /**
+     * Speichert die Fehlermeldung des Servers.
+     */
     public String text;
 
     // Variables
@@ -51,6 +63,16 @@ public class TableSelection extends Fragment {
 
     }
 
+    /**
+     *
+     * Diese Methode wird aufgerufen wenn das Fragment erstellt wird. Dabei wird der Befehl gegeben, dass alle Artikel, Tische und Bestellungen vom Server angefordert.
+     * Für "Bestellung aufgeben" wird hier der Startbildschirm initialisiert.
+     *
+     * @param inflater Instantiiert ein XML-Layout in ein passendes View Objekt
+     * @param container Erlaubt den Zugriff auf container Eigenschaften
+     * @param savedInstanceState Gibt an in welchem Abschnitt des Lebenszyklus die App sich befindet. Ob sie z.B. geschlossen wurde oder gestartet wurde.
+     * @return View die dargestellt werden soll
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -96,7 +118,7 @@ public class TableSelection extends Fragment {
                 // Set the next Fragment
                 if (tableName == null) {
 
-                    showToast("Bitte überprügen Sie die IP Adresse. Es kann keine Verbindung hergestellt werden");
+                    showToast("Bitte überprüfen Sie die IP-Adresse. Es kann keine Verbindung hergestellt werden");
 
                 } else if (tableName != "") {
 
@@ -107,12 +129,13 @@ public class TableSelection extends Fragment {
                         MainActivity.orderIsPaid = false;
                     }
 
+                    new CreateOrderWithoutItem().execute();
                     ItemSelect fragment = new ItemSelect();
                     FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
                     fragmentTransaction.replace(R.id.frame, fragment, "fragment1");
                     fragmentTransaction.commit();
-
                 }  else {
+
 
                     showToast("Bitte wählen Sie einen Tisch aus");
 
@@ -124,12 +147,20 @@ public class TableSelection extends Fragment {
         return v;
 
     }
-
+    /**
+     * private
+     * Diese Klasse wird dafür verwendet, alle Tische die derzeit in der Datenbank als verfügbar angelegt sind in die Applikation zu laden.
+     */
     private class GetAllTables extends AsyncTask<Void,Void,ArrayList<Table>> {
 
+        /**
+         * Diese Methode wird dafür verwendet alle Tische der Datenbank zu erhalten. Die Tische werden in der MainActivity gepseichert.
+         *
+         * @param params welche Datentypen die Informationen haben, die im Hintergrund bearbeitet werden sollen.
+         * @return Wenn die Kommunikation ohne Fehler gelungen ist, werden alle Tische die in der Datenbank hinterlegt sind zurückgegeben. Falls ein Fehler auftritt wird null zurückgegeben.
+         */
         @Override
         protected ArrayList<Table> doInBackground(Void... params) {
-
             RestTemplate restTemplate = new RestTemplate();
             try {
 
@@ -139,10 +170,13 @@ public class TableSelection extends Fragment {
                                         null, new ParameterizedTypeReference<ArrayList<Table>>() {
                                         });
                 ArrayList<Table> tables = responseEntity.getBody();
+                System.out.println(responseEntity.getStatusCode());
 
                 MainActivity.allTables = tables;
 
                 text = null;
+                for(int i = 0;i<tables.size();i++)
+                System.out.println("Table ID: "+tables.get(i).getTableID() + " Table Name: "+ tables.get(i).getName()+" is the Table Avialable: "+tables.get(i).isAvailable());
                 return tables;
 
             } catch (HttpClientErrorException e){
@@ -158,6 +192,13 @@ public class TableSelection extends Fragment {
                 return null;
             }
         }
+
+        /**
+         * In dieser Methode werden alle verfügbaren Tische die in der Datenbank hinterlegt sind in das Dropdown Menü gespeichert
+         * Falls ein Fehler in der Übermittlung der Daten vom Server auftritt, wird dieser mit Hilfe der Methode showToast dargestellt.
+         *
+         * @param tables Alle Tische die von der Datenbank übermittelt wurden.
+         */
         @Override
         protected void onPostExecute( ArrayList<Table> tables) {
             super.onPostExecute(tables);
@@ -194,7 +235,9 @@ public class TableSelection extends Fragment {
                         textOfSpinner[i + 1] = tables.get(i).getName();
 
                     }
-
+                    if(textOfSpinner.length<2){
+                        showToast("Es befinden sich keine Daten in der Datenbank.");
+                    }
                 }
 
                 spinnerTV = (Spinner) getActivity().findViewById(R.id.spinnerTV);
@@ -207,9 +250,17 @@ public class TableSelection extends Fragment {
         }
 
     }
-
+    /**
+     * Diese Klasse wird dafür verwendet, alle Artikel die derzeit in der Datenbank als verfügbar angelegt sind in die Applikation zu laden.
+     */
     private class GetAllItems extends AsyncTask<Void, Void, ArrayList<Item>>{
 
+        /**
+         * Diese Methode wird dafür verwendet alle Artikel der Datenbank zu erhalten. Die Artikel werden in der MainActivity gepseichert.
+         *
+         * @param params welche Datentypen die Informationen haben, die im Hintergrund bearbeitet werden sollen.
+         * @return Wenn die Kommunikation ohne Fehler gelungen ist, werden alle Artikel die in der Datenbank hinterlegt sind zurückgegeben. Falls ein Fehler auftritt wird null zurückgegeben.
+         */
         @Override
         protected ArrayList<Item> doInBackground(Void... params){
 
@@ -241,6 +292,11 @@ public class TableSelection extends Fragment {
             }
         }
 
+        /**
+         * Falls bei der Kommunikation mit dem Server ein Fehler auftritt, wird mithilfe der ShowToast-Methode dieser Fehler dargestellt.
+         *
+         * @param items Wird hier nicht benötigt.
+         */
         @Override
         protected void onPostExecute(ArrayList<Item> items) {
             super.onPostExecute(items);
@@ -252,9 +308,17 @@ public class TableSelection extends Fragment {
 
         }
     }
-
+    /**
+     * Diese Klasse wird dafür verwendet, alle Bestellungen die derzeit in der Datenbank angelegt sind in die Applikation zu laden.
+     */
     private class GetAllOrders extends AsyncTask<Void,Void,ArrayList<Order>> {
 
+        /**
+         * Diese Methode wird dafür verwendet alle Bestellungen der Datenbank zu erhalten. Die Bestellungen werden in der MainActivity gepseichert.
+         *
+         * @param params welche Datentypen die Informationen haben, die im Hintergrund bearbeitet werden sollen.
+         * @return null, alle Informationen die vom Server übermittelt wurden werden in der MainActivity gespeichert.
+         */
         @Override
         protected ArrayList<Order> doInBackground(Void... params) {
             try {
@@ -304,6 +368,11 @@ public class TableSelection extends Fragment {
             }
         }
 
+        /**
+         *  Falls bei der Kommunikation mit dem Server ein Fehler auftritt, wird mithilfe der ShowToast-Methode dieser Fehler dargestellt.
+         *  Speichert die Bestellungen in der MainActivity.
+         * @param orders alle Bestellungen die in der Datenbank hinterlegt sind
+         */
         protected void onPostExecute( ArrayList<Order> orders) {
             super.onPostExecute(orders);
 
@@ -316,10 +385,60 @@ public class TableSelection extends Fragment {
                 MainActivity.allOrders = orders;
             }
 
-            /*
-         *  TODO Überprüfen, ob mit diesem Tisch eine nicht-bezahlte Order existiert
-         *  TODO Wenn ja, den Inhalt dieser Order darstellen (entsprechend die dargestellten Inhalte anpassen)
+        }
+    }
+
+    private class GetAllCategories extends AsyncTask<Void,Void,ArrayList<Category>> {
+
+        /**
+         * Diese Methode wird dafür verwendet alle Bestellungen der Datenbank zu erhalten. Die Bestellungen werden in der MainActivity gepseichert.
+         *
+         * @param params welche Datentypen die Informationen haben, die im Hintergrund bearbeitet werden sollen.
+         * @return null, alle Informationen die vom Server übermittelt wurden werden in der MainActivity gespeichert.
          */
+        @Override
+        protected ArrayList<Category> doInBackground(Void... params) {
+
+            try {
+                RestTemplate restTemplate = new RestTemplate();
+                text = null;
+                List<LinkedHashMap<String, Object>> categoryMap = restTemplate.getForObject(MainActivity.url + "/categories", List.class);
+
+                if(categoryMap != null) {
+                    MainActivity.allCategories.clear();
+                    for (LinkedHashMap<String, Object> map:categoryMap){
+
+                        int categoryId = (Integer)map.get("categoryID");
+                        String categoryName = (String)map.get("name");
+
+                        Category category = new Category (categoryId, categoryName);
+
+                        MainActivity.allCategories.add(category);
+                    }
+                }
+
+                return null;
+            } catch (Exception e){
+                return null;
+            }
+        }
+
+        /**
+         *  Falls bei der Kommunikation mit dem Server ein Fehler auftritt, wird mithilfe der ShowToast-Methode dieser Fehler dargestellt.
+         *  Speichert die Bestellungen in der MainActivity.
+         */
+        protected void onPostExecute( ArrayList<Category> categories) {
+            super.onPostExecute(categories);
+
+            if(text != null){
+                showToast(text);
+                text = null;
+            }
+
+            if (categories != null) {
+                MainActivity.allCategories = categories;
+            }
+
         }
     }
 
@@ -356,7 +475,6 @@ public class TableSelection extends Fragment {
             super.onPostExecute(aVoid);
 
             showToast(text);
-
 
         }
     }
@@ -452,12 +570,17 @@ public class TableSelection extends Fragment {
                 text = null;
             }
 
+
         }
 
     }
 
-    private boolean isOrderPaidAtTheSelectedTable(String tableName){
-
+    /**
+     * Überprüft ob eine noch nicht bezahlte Rechnung an dem übergebenen Tisch existiert.
+     * Falls eine nicht bezahlte Bestellung existiert, werden die Artikel der Bestellung in der MainActivity gespeichert.
+     * @param tableName Übergibt den Tisch-Name der überprüft werden soll.
+     */
+    private void isOrderPaidAtTheSelectedTable(String tableName){
 
         // Request if there is a table selected
         if(tableName != "") {
@@ -479,6 +602,11 @@ public class TableSelection extends Fragment {
                             MainActivity.selectedOrderID = o.getOrderID();
                             return false;
 
+                        } else {
+
+                            MainActivity.orderItemIDs.clear();
+                            MainActivity.selectedOrderID = -1;
+
                         }
 
                     }
@@ -490,7 +618,10 @@ public class TableSelection extends Fragment {
         }
         return true;
     }
-
+    /**
+     * Methode, die den übergebenen Text auf dem Smartphone darstellt.
+     * @param text Der Text welcher dargestellt werden soll.
+     */
     private void showToast(String text){
         if(text != null) {
             Toast.makeText(MainActivity.context, text, Toast.LENGTH_LONG).show();

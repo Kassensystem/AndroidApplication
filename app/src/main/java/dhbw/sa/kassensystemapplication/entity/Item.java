@@ -1,6 +1,7 @@
 package dhbw.sa.kassensystemapplication.entity;
 
 
+
 /**
  * Model für einen Datensatz der Datenbanktabelle items.
  *
@@ -12,6 +13,7 @@ public class Item {
     private double retailprice;
     private int quantity;
     private boolean available;
+    private int categoryID;
 
     /**
      * Default-Constructor
@@ -28,7 +30,7 @@ public class Item {
      * @param quantity Anzahl  des Tisches aus der Datenbank, ermittelt aus Wareneingängen und Warenausgängen.
      * @param available Verfügbarkeit des Tisches aus der Datenbank.
      */
-    public Item(int itemID, String name, double retailprice, int quantity, boolean available){
+    public Item(int itemID, String name, double retailprice, int quantity, boolean available, int categoryID){
 
         if(name == null)
             throw new NullPointerException("Es muss ein Name übergeben werden!");
@@ -38,6 +40,7 @@ public class Item {
         this.retailprice = retailprice;
         this.quantity = quantity;
         this.available = available;
+        this.categoryID = categoryID;
     }
 
     /**
@@ -48,7 +51,7 @@ public class Item {
      * @param quantity Anzahl des neuen Artikels, diese wird als neuer Wareneingang abgespeichert.
      * @param available Verfügbarkeit des neuen Artikels.
      */
-    public Item(String name, double retailprice, int quantity, boolean available){
+    public Item(String name, double retailprice, int quantity, boolean available, int categoryID){
 
         if(name == null)
             throw new NullPointerException("Es muss ein Name übergeben werden!");
@@ -57,6 +60,7 @@ public class Item {
         this.retailprice = retailprice;
         this.quantity = quantity;
         this.available = available;
+        this.categoryID = categoryID;
     }
 
     /**
@@ -66,7 +70,7 @@ public class Item {
      * @param retailprice Verkaufspreis des Artikels.
      * @param available Verfügbarkeit des Artikels.
      */
-    public Item(int itemID, String name, double retailprice, boolean available){
+    public Item(int itemID, String name, double retailprice, boolean available, int categoryID){
 
         if(name == null)
             throw new NullPointerException("Es muss ein Name übergeben werden!");
@@ -75,6 +79,7 @@ public class Item {
         this.name = name;
         this.retailprice = retailprice;
         this.available = available;
+        this.categoryID = categoryID;
     }
 
     /*Getter*/
@@ -96,8 +101,10 @@ public class Item {
     }
 
     public boolean isAvailable() {
-        return available;
+        return this.available;
     }
+
+    public int getCategoryID() { return this.categoryID; }
 
     /*Setter*/
 
