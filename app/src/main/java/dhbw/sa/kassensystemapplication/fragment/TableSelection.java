@@ -129,7 +129,6 @@ public class TableSelection extends Fragment {
                         MainActivity.orderIsPaid = false;
                     }
 
-                    new CreateOrderWithoutItem().execute();
                     ItemSelect fragment = new ItemSelect();
                     FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
                     fragmentTransaction.replace(R.id.frame, fragment, "fragment1");
@@ -388,60 +387,6 @@ public class TableSelection extends Fragment {
         }
     }
 
-    private class GetAllCategories extends AsyncTask<Void,Void,ArrayList<Category>> {
-
-        /**
-         * Diese Methode wird dafür verwendet alle Bestellungen der Datenbank zu erhalten. Die Bestellungen werden in der MainActivity gepseichert.
-         *
-         * @param params welche Datentypen die Informationen haben, die im Hintergrund bearbeitet werden sollen.
-         * @return null, alle Informationen die vom Server übermittelt wurden werden in der MainActivity gespeichert.
-         */
-        @Override
-        protected ArrayList<Category> doInBackground(Void... params) {
-
-            try {
-                RestTemplate restTemplate = new RestTemplate();
-                text = null;
-                List<LinkedHashMap<String, Object>> categoryMap = restTemplate.getForObject(MainActivity.url + "/categories", List.class);
-
-                if(categoryMap != null) {
-                    MainActivity.allCategories.clear();
-                    for (LinkedHashMap<String, Object> map:categoryMap){
-
-                        int categoryId = (Integer)map.get("categoryID");
-                        String categoryName = (String)map.get("name");
-
-                        Category category = new Category (categoryId, categoryName);
-
-                        MainActivity.allCategories.add(category);
-                    }
-                }
-
-                return null;
-            } catch (Exception e){
-                return null;
-            }
-        }
-
-        /**
-         *  Falls bei der Kommunikation mit dem Server ein Fehler auftritt, wird mithilfe der ShowToast-Methode dieser Fehler dargestellt.
-         *  Speichert die Bestellungen in der MainActivity.
-         */
-        protected void onPostExecute( ArrayList<Category> categories) {
-            super.onPostExecute(categories);
-
-            if(text != null){
-                showToast(text);
-                text = null;
-            }
-
-            if (categories != null) {
-                MainActivity.allCategories = categories;
-            }
-
-        }
-    }
-
     private class CreatNewOrder extends AsyncTask<Void, Void, Void> {
 
         @Override
@@ -580,7 +525,7 @@ public class TableSelection extends Fragment {
      * Falls eine nicht bezahlte Bestellung existiert, werden die Artikel der Bestellung in der MainActivity gespeichert.
      * @param tableName Übergibt den Tisch-Name der überprüft werden soll.
      */
-    private void isOrderPaidAtTheSelectedTable(String tableName){
+    private boolean isOrderPaidAtTheSelectedTable(String tableName){
 
         // Request if there is a table selected
         if(tableName != "") {
@@ -601,11 +546,6 @@ public class TableSelection extends Fragment {
                             new GetOrderedItems().execute();
                             MainActivity.selectedOrderID = o.getOrderID();
                             return false;
-
-                        } else {
-
-                            MainActivity.orderItemIDs.clear();
-                            MainActivity.selectedOrderID = -1;
 
                         }
 
