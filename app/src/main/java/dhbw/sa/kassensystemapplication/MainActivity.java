@@ -38,6 +38,7 @@ import dhbw.sa.kassensystemapplication.entity.Order;
 import dhbw.sa.kassensystemapplication.entity.OrderedItem;
 import dhbw.sa.kassensystemapplication.entity.Table;
 import dhbw.sa.kassensystemapplication.fragment.CheckProduce;
+import dhbw.sa.kassensystemapplication.fragment.LoginFragment;
 import dhbw.sa.kassensystemapplication.fragment.TableSelection;
 import dhbw.sa.kassensystemapplication.fragment.URL_Einstellen;
 
@@ -48,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public static ArrayList<Item> allItems = new ArrayList<>();
     public static ArrayList<Order> allOrders = new ArrayList<>();
     public static ArrayList<OrderedItem> orderedItems = new ArrayList<>();
+    public static ArrayList<OrderedItem> allunproducedItems = new ArrayList();
     public static Table selectedTable;
     public static int selectedOrderID;
     public static boolean orderIsPaid;
@@ -130,7 +132,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         } else if (id == R.id.nav_Login){
 
-           showToast("Hier wird dann der Login Bildschirm nächstes Semester eingebaut!");
+            setTitle("Login");
+            LoginFragment fragment = new LoginFragment();
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.replace(R.id.frame,fragment);
+            fragmentTransaction.commit();
 
         } else if (id == R.id.nav_CheckProduce){
 

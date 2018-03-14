@@ -45,7 +45,6 @@ public class PayOrder extends Fragment {
 
     //variables
     private int sizeOfRelativeLayout = 0;
-    private ArrayList<OrderedItem> payAllItemsAtOneTime = new ArrayList<>();
     public static ArrayList<String> namesFromItems = new ArrayList<>();
     public static double storeOfSum = 0;
     public static String text = null;
@@ -248,16 +247,9 @@ public class PayOrder extends Fragment {
                     for (OrderedItem item: MainActivity.orderedItems){
 
                         item.setItemIsPaid(true);
-                        payAllItemsAtOneTime.add(item);
 
                     }
-                    MainActivity.orderedItems.clear();
-                    for (OrderedItem orderedItem: payAllItemsAtOneTime){
 
-                        MainActivity.orderedItems.add(orderedItem);
-
-                    }
-                    payAllItemsAtOneTime.clear();
                 }
 
                 if(printerService.isChecked()){

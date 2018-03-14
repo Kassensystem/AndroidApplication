@@ -248,7 +248,8 @@ public class ItemSelect extends Fragment {
         paidBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                isOrderPaid = true;
+                new UpdateOrder().execute();
                 showPayFragment();
 
             }
@@ -346,7 +347,10 @@ public class ItemSelect extends Fragment {
                         HttpMethod.POST,
                         new ParameterizedTypeReference<ArrayList<OrderedItem>>(){});
 
-                MainActivity.orderedItems.clear();
+
+                if (!isOrderPaid) {
+                    MainActivity.orderedItems.clear();
+                }
 
             } catch (HttpClientErrorException e){
                 text = e.getResponseBodyAsString();
@@ -397,19 +401,6 @@ public class ItemSelect extends Fragment {
         }
 
 
-    }
-
-    public static OrderedItem findOrderedItemByItemID(int ID){
-
-        for(OrderedItem orderItem: MainActivity.orderedItems){
-
-            if(orderItem.getItemID() == ID){
-                return orderItem;
-            }
-
-        }
-
-        return null;
     }
 
 }

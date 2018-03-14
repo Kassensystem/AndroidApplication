@@ -33,6 +33,7 @@ import dhbw.sa.kassensystemapplication.entity.Order;
 import dhbw.sa.kassensystemapplication.entity.OrderedItem;
 import dhbw.sa.kassensystemapplication.entity.Table;
 
+import static dhbw.sa.kassensystemapplication.MainActivity.orderedItems;
 import static dhbw.sa.kassensystemapplication.MainActivity.url;
 
 
@@ -61,6 +62,7 @@ public class TableSelection extends Fragment {
         new GetAllTables().execute();
         new GetAllItems().execute();
         new GetAllOrders().execute();
+        new GetAllUnproducedItems().execute();
 
         // Initialize the Nodes
         confirmTV = v.findViewById(R.id.confirmTV);
@@ -407,6 +409,52 @@ public class TableSelection extends Fragment {
         }
     }
 
+    private class GetAllUnproducedItems extends AsyncTask<Void,Void,ArrayList<OrderedItem>> {
+
+        @Override
+        protected ArrayList<OrderedItem> doInBackground(Void... params) {
+
+            RestTemplate restTemplate = new RestTemplate();
+            try {
+
+                ResponseEntity<ArrayList<OrderedItem>> responseEntity =
+                        restTemplate.exchange
+                                (MainActivity.url + "/unproducedOrderedItems", HttpMethod.GET,
+                                        null, new ParameterizedTypeReference<ArrayList<OrderedItem>>() {
+                                        });
+                ArrayList<OrderedItem> orderedItems = responseEntity.getBody();
+
+                MainActivity.allunproducedItems = orderedItems;
+
+                text = null;
+                return orderedItems;
+
+            } catch (HttpClientErrorException e){
+                text = e.getResponseBodyAsString();
+                return null;
+            } catch (ResourceAccessException e) {
+                text = "Es konnte keine Verbindung aufgebaut werden.";
+                return null;
+            }
+            catch (Exception e){
+                text ="Ein Unbekannter Fehler ist aufgetreten Table";
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute( ArrayList<OrderedItem> orderedItems) {
+            super.onPostExecute(orderedItems);
+
+            if(text != null){
+                showToast(text);
+                text = null;
+            }
+
+        }
+
+    }
 
     private boolean isOrderPaidAtTheSelectedTable(String tableName){
 
