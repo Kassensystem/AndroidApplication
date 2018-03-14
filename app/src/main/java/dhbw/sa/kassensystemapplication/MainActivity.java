@@ -55,6 +55,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public static Table selectedTable;
     public static int selectedOrderID;
     public static boolean orderIsPaid;
+    public static String loginName;
+    public static String loginPassword;
 
 
     // The variables to get the connection with the server
