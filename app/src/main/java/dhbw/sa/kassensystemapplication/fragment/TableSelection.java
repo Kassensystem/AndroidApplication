@@ -1,11 +1,7 @@
 package dhbw.sa.kassensystemapplication.fragment;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
@@ -21,11 +17,11 @@ import org.joda.time.DateTime;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -35,15 +31,20 @@ import dhbw.sa.kassensystemapplication.R;
 import dhbw.sa.kassensystemapplication.entity.Category;
 import dhbw.sa.kassensystemapplication.entity.Item;
 import dhbw.sa.kassensystemapplication.entity.Order;
+import dhbw.sa.kassensystemapplication.entity.OrderedItem;
 import dhbw.sa.kassensystemapplication.entity.Table;
 
+
+import static dhbw.sa.kassensystemapplication.MainActivity.orderedItems;
 import static dhbw.sa.kassensystemapplication.MainActivity.url;
+
 
 /**
  * In dieser Klasse wird der Startbildschirm der Applikation erstellt.
  * Dieser wird ebenfalls aufgerufen, wenn angefangen wird eine Bestellung aufzugeben.
  * @author Daniel Schifano
  */
+
 
 public class TableSelection extends Fragment {
 
@@ -83,6 +84,7 @@ public class TableSelection extends Fragment {
         new GetAllTables().execute();
         new GetAllItems().execute();
         new GetAllOrders().execute();
+        new GetAllUnproducedItems().execute();
 
         // Initialize the Nodes
         confirmTV = v.findViewById(R.id.confirmTV);
@@ -119,6 +121,13 @@ public class TableSelection extends Fragment {
                     showToast("Bitte überprüfen Sie die IP-Adresse. Es kann keine Verbindung hergestellt werden");
 
                 } else if (tableName != "") {
+
+                    if(isOrderPaidAtTheSelectedTable(tableName)){
+                        MainActivity.orderIsPaid = true;
+                        new CreatNewOrder().execute();
+                    } else {
+                        MainActivity.orderIsPaid = false;
+                    }
 
                     new CreateOrderWithoutItem().execute();
                     ItemSelect fragment = new ItemSelect();
@@ -178,7 +187,8 @@ public class TableSelection extends Fragment {
                 return null;
             }
             catch (Exception e){
-                text ="Ein Unbekannter Fehler ist aufgetreten";
+                text ="Ein Unbekannter Fehler ist aufgetreten Table";
+                e.printStackTrace();
                 return null;
             }
         }
@@ -276,7 +286,8 @@ public class TableSelection extends Fragment {
                 return null;
             }
             catch (Exception e){
-                text ="Ein Unbekannter Fehler ist aufgetreten";
+                text ="Ein Unbekannter Fehler ist aufgetreten Item";
+                e.printStackTrace();
                 return null;
             }
         }
@@ -330,7 +341,7 @@ public class TableSelection extends Fragment {
                         int id = (Integer)map.get("orderID");
 
                         Order order = new Order (id,
-                                (String)map.get("itemIDs"),
+                                //(String)map.get("itemIDs"),
                                 (int)map.get("tableID"),
                                 (double)map.get("price"),
                                 date,
@@ -351,7 +362,8 @@ public class TableSelection extends Fragment {
                 return null;
             }
             catch (Exception e){
-                text ="Ein Unbekannter Fehler ist aufgetreten";
+                text ="Ein Unbekannter Fehler ist aufgetreten Order";
+                e.printStackTrace();
                 return null;
             }
         }
@@ -430,35 +442,30 @@ public class TableSelection extends Fragment {
         }
     }
 
-    private class CreateOrderWithoutItem extends AsyncTask<Void, Void, Void>{
+    private class CreatNewOrder extends AsyncTask<Void, Void, Void> {
 
         @Override
-        protected Void doInBackground(Void... voids) {
+        protected Void doInBackground(Void... params) {
+
             RestTemplate restTemplate = new RestTemplate();
 
+
             try {
-                String itemIDs = Order.joinIntIDsIntoString(MainActivity.orderItemIDs);
-                System.out.println(itemIDs);
-                int tableID = MainActivity.selectedTable.getTableID();
-                System.out.println(tableID);
+                Order order = new Order(MainActivity.selectedTable.getTableID());
+                URI uri = restTemplate.postForLocation(url + "/order/", order, Order.class);
+                Integer orderId = Integer.parseInt(uri.toString());
+                System.out.println("--------------------------------------------------------------\n \n \n \n"+orderId);
+                MainActivity.selectedOrderID = orderId;
 
-                Order order = new Order(tableID);
 
-
-                //Order übertragen
-                // TODO Das Datum kann nicht übertragen werden. Wird momentan auf controllerseite erzeugt.
-                restTemplate.postForLocation(url + "/order/", order, Order.class);
-
-            } catch (HttpClientErrorException e) {
+            } catch (HttpClientErrorException e){
 
                 text = e.getResponseBodyAsString();
                 return null;
-
             }catch (Exception e){
 
-                text = "Die Verbindung zum Server ist unterbrochen worden!";
+                text = "undefinierter Fehler";
                 e.printStackTrace();
-                return null;
             }
             return null;
         }
@@ -470,9 +477,103 @@ public class TableSelection extends Fragment {
             showToast(text);
 
         }
-
     }
 
+    private class GetOrderedItems extends AsyncTask<Void,Void,ArrayList<OrderedItem>> {
+
+        @Override
+        protected ArrayList<OrderedItem> doInBackground(Void... params) {
+
+            RestTemplate restTemplate = new RestTemplate();
+
+
+            try {
+                ResponseEntity<ArrayList<OrderedItem>> responseEntity =
+                        restTemplate.exchange
+                                ( MainActivity.url + "/orderedItems/"+MainActivity.selectedOrderID, HttpMethod.GET,
+                                        null, new ParameterizedTypeReference<ArrayList<OrderedItem>>() {});
+
+                MainActivity.orderedItems = responseEntity.getBody();
+                text = null;
+
+                return MainActivity.orderedItems;
+
+            } catch (HttpClientErrorException e){
+                text = e.getResponseBodyAsString();
+                return null;
+            } catch (ResourceAccessException e) {
+                text = "Es konnte keine Verbindung aufgebaut werden.";
+                return null;
+            }
+            catch (Exception e){
+                text ="Ein Unbekannter Fehler ist aufgetreten";
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        protected void onPostExecute( ArrayList<OrderedItem> orderedItems) {
+            super.onPostExecute(orderedItems);
+
+            if(text != null){
+                showToast(text);
+                text = null;
+            }
+
+            if (orderedItems != null) {
+                MainActivity.orderedItems = orderedItems;
+            }
+
+        }
+    }
+
+    private class GetAllUnproducedItems extends AsyncTask<Void,Void,ArrayList<OrderedItem>> {
+
+        @Override
+        protected ArrayList<OrderedItem> doInBackground(Void... params) {
+
+            RestTemplate restTemplate = new RestTemplate();
+            try {
+
+                ResponseEntity<ArrayList<OrderedItem>> responseEntity =
+                        restTemplate.exchange
+                                (MainActivity.url + "/unproducedOrderedItems", HttpMethod.GET,
+                                        null, new ParameterizedTypeReference<ArrayList<OrderedItem>>() {
+                                        });
+                ArrayList<OrderedItem> orderedItems = responseEntity.getBody();
+
+                MainActivity.allunproducedItems = orderedItems;
+
+                text = null;
+                return orderedItems;
+
+            } catch (HttpClientErrorException e){
+                text = e.getResponseBodyAsString();
+                return null;
+            } catch (ResourceAccessException e) {
+                text = "Es konnte keine Verbindung aufgebaut werden.";
+                return null;
+            }
+            catch (Exception e){
+                text ="Ein Unbekannter Fehler ist aufgetreten Table";
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute( ArrayList<OrderedItem> orderedItems) {
+            super.onPostExecute(orderedItems);
+
+            if(text != null){
+                showToast(text);
+                text = null;
+            }
+
+
+        }
+
+    }
 
     /**
      * Überprüft ob eine noch nicht bezahlte Rechnung an dem übergebenen Tisch existiert.
@@ -497,9 +598,9 @@ public class TableSelection extends Fragment {
 
                         // save the orderItems
                         if (!o.isPaid() && t.getTableID() == o.getTable()) {
-
-                            MainActivity.orderItemIDs = Order.splitItemIDString(o.getItems());
+                            new GetOrderedItems().execute();
                             MainActivity.selectedOrderID = o.getOrderID();
+                            return false;
 
                         } else {
 
@@ -513,16 +614,19 @@ public class TableSelection extends Fragment {
                 }
 
             }
+
         }
+        return true;
     }
     /**
      * Methode, die den übergebenen Text auf dem Smartphone darstellt.
      * @param text Der Text welcher dargestellt werden soll.
      */
     private void showToast(String text){
-
-        Toast.makeText(MainActivity.context, text, Toast.LENGTH_LONG).show();
-        System.out.println(text);
+        if(text != null) {
+            Toast.makeText(MainActivity.context, text, Toast.LENGTH_LONG).show();
+            System.out.println(text);
+        }
     }
 
 

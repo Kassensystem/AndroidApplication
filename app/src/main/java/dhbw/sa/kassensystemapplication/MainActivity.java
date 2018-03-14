@@ -20,7 +20,10 @@ import java.util.ArrayList;
 import dhbw.sa.kassensystemapplication.entity.Category;
 import dhbw.sa.kassensystemapplication.entity.Item;
 import dhbw.sa.kassensystemapplication.entity.Order;
+import dhbw.sa.kassensystemapplication.entity.OrderedItem;
 import dhbw.sa.kassensystemapplication.entity.Table;
+import dhbw.sa.kassensystemapplication.fragment.CheckProduce;
+import dhbw.sa.kassensystemapplication.fragment.LoginFragment;
 import dhbw.sa.kassensystemapplication.fragment.TableSelection;
 import dhbw.sa.kassensystemapplication.fragment.adjustUrl;
 
@@ -46,22 +49,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
      * Liste die alle Bestellungen der Datenbank beinhaltet.
      */
     public static ArrayList<Order> allOrders = new ArrayList<>();
-    /**
-     * Liste die alle "Kategorien" der Datenbank beinhaltet.
-     */
-    public static ArrayList<Category> allCategories = new ArrayList<>();
-    /**
-     * Liste die alle ArtikelIDs einer Bestellung der Datenbank beinhaltet.
-     */
-    public static ArrayList<Integer> orderItemIDs = new ArrayList<>();
-    /**
-     * Der Tisch an dem die Bestellung stattfindet.
-     */
+
+    public static ArrayList<OrderedItem> orderedItems = new ArrayList<>();
+    public static ArrayList<OrderedItem> allunproducedItems = new ArrayList();
     public static Table selectedTable;
-    /**
-     * Zwischenspeicher der ausgewählten BestellungsID.
-     */
-    public static int selectedOrderID = -1;
+    public static int selectedOrderID;
+    public static boolean orderIsPaid;
+
 
     // The variables to get the connection with the server
     /**
@@ -177,7 +171,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         } else if (id == R.id.nav_Login){
 
-           showToast("Hier wird dann der Login Bildschirm nächstes Semester eingebaut!");
+            setTitle("Login");
+            LoginFragment fragment = new LoginFragment();
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.replace(R.id.frame,fragment);
+            fragmentTransaction.commit();
+
+        } else if (id == R.id.nav_CheckProduce){
+
+            setTitle("Bestellungsannahme");
+            CheckProduce fragment = new CheckProduce();
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.replace(R.id.frame,fragment);
+            fragmentTransaction.commit();
 
         }else if (id == R.id.nav_CR) {
 

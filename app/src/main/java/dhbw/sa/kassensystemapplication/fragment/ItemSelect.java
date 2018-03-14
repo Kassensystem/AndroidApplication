@@ -19,6 +19,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
 import org.joda.time.DateTime;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -29,7 +30,9 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 
-import dhbw.sa.kassensystemapplication.ItemSelection;
+
+import dhbw.sa.kassensystemapplication.entity.OrderedItem;
+import static dhbw.sa.kassensystemapplication.MainActivity.orderedItems;
 import dhbw.sa.kassensystemapplication.MainActivity;
 import dhbw.sa.kassensystemapplication.R;
 import dhbw.sa.kassensystemapplication.entity.Item;
@@ -51,6 +54,7 @@ public class ItemSelect extends Fragment {
     private TextView sum;
     private Button orderBtn;
     private Button paidBtn;
+
     /**
      * Speichert die Fehlermeldung des Servers.
      */
@@ -182,13 +186,18 @@ public class ItemSelect extends Fragment {
 
                 // To start the update-Order with already chosen items
                 int startUpdate = 0;
-                for (Integer itemID: MainActivity.orderItemIDs){
 
-                    if(itemID == MainActivity.allItems.get(i).getItemID()){
+                for (OrderedItem orderedItem: orderedItems){
+
+                    if(orderedItem.getItemID() == MainActivity.allItems.get(i).getItemID()){
 
                         int number = Integer.parseInt((String)quantityTextField.getText());
                         number++;
                         startUpdate++;
+
+                        int numberOfInventory = Integer.parseInt((String)inventoryTextView.getText());
+                        numberOfInventory--;
+                        inventoryTextView.setText(Integer.toString(numberOfInventory));
 
                         storeOfSum = storeOfSum + MainActivity.allItems.get(i).getRetailprice();
                         storeOfSum = (double) ((int) storeOfSum + (Math.round(Math.pow(10, 3) * (storeOfSum - (int) storeOfSum))) / (Math.pow(10, 3)));
@@ -279,6 +288,7 @@ public class ItemSelect extends Fragment {
                         // request if there is an Item in the Order
                         if (selectedQuantity > 0) {
 
+
                             if(finalStartUpdate < selectedQuantity) {
                                 selectedQuantity--;
                                 numberOfInventory++;
@@ -297,6 +307,7 @@ public class ItemSelect extends Fragment {
                                 double result = UpdateSum(false, itemName);
                                 sum.setText(Double.toString(result) + " €");
                             }
+
                         }
 
                         // Set the TextViews quantity and inventory
@@ -313,13 +324,9 @@ public class ItemSelect extends Fragment {
             @Override
             public void onClick(View view) {
                 isOrderPaid = false;
-                if(MainActivity.selectedOrderID >= 0){
-                    new UpdateOrder().execute();
-                    showTableFragment();
-                } else {
-                    new CreatNewOrder().execute();
-                    showTableFragment();
-                }
+                new UpdateOrder().execute();
+                showTableFragment();
+
 
             }
         });
@@ -328,13 +335,9 @@ public class ItemSelect extends Fragment {
             @Override
             public void onClick(View view) {
                 isOrderPaid = true;
-                if(MainActivity.selectedOrderID >= 0){
-                    new UpdateOrder().execute();
-                    showTableFragment();
-                } else {
-                    new CreatNewOrder().execute();
-                    showTableFragment();
-                }
+                new UpdateOrder().execute();
+                showPayFragment();
+
             }
         });
 
@@ -342,6 +345,7 @@ public class ItemSelect extends Fragment {
     }
 
     //update the sumTextView in the Fragment
+
     /**
      * In dieser Methode wird der Gesamtpreis der Bestellung errechnet.
      *
@@ -350,6 +354,7 @@ public class ItemSelect extends Fragment {
      * @return Den Gesamtpreis der Bestellung.
      */
     private double UpdateSum(boolean isAdd, String itemName){
+
 
         double result = 0;
 
@@ -366,7 +371,7 @@ public class ItemSelect extends Fragment {
                         storeOfSum = (double) ((int) storeOfSum + (Math.round(Math.pow(10, 3) * (storeOfSum - (int) storeOfSum))) / (Math.pow(10, 3)));
 
                         // add the Item to the Order
-                        MainActivity.orderItemIDs.add(MainActivity.allItems.get(i).getItemID());
+                        orderedItems.add(new OrderedItem(MainActivity.selectedOrderID,MainActivity.allItems.get(i).getItemID()));
 
                         break;
                     }
@@ -377,34 +382,32 @@ public class ItemSelect extends Fragment {
 
         //subtract
         } else {
-
+            OrderedItem orderedItem = null;
             // Search in all items, to get the retailprice
             for (int i = 0; i < MainActivity.allItems.size(); i++) {
 
                 // Search if one item from all items got the same name
-                if (MainActivity.allItems.get(i).getName().equalsIgnoreCase(itemName)) {
+                if (MainActivity.allItems.get(i).getName().equals(itemName)) {
 
                     storeOfSum = storeOfSum - (MainActivity.allItems.get(i).getRetailprice());
                     storeOfSum = (double) ((int) storeOfSum + (Math.round(Math.pow(10, 3) * (storeOfSum - (int) storeOfSum))) / (Math.pow(10, 3)));
 
-                    // Search in the Order for the item
-                    for(Integer integer: MainActivity.orderItemIDs){
+                    for (OrderedItem item: MainActivity.orderedItems){
 
-                        // if there is the Item, it will be delete from this Order
-                        if(integer == MainActivity.allItems.get(i).getItemID()){
+                        if(item.getItemID() == MainActivity.allItems.get(i).getItemID()){
 
-                            MainActivity.orderItemIDs.remove(integer);
+                            orderedItem = item;
                             break;
 
                         }
 
                     }
-
-                    break;
-
                 }
 
             }
+
+
+            MainActivity.allItems.remove(orderedItem);
 
             result = storeOfSum;
 
@@ -416,66 +419,11 @@ public class ItemSelect extends Fragment {
         return result;
 
     }
-    /**
-     * Diese Klasse wird dafür verwendet, eine Bestellung die mit der Applikation erstellt wurde, an den Server weiterzuleiten.
-     */
-    private class CreatNewOrder extends AsyncTask<Void, Void, Void> {
 
-        /**
-         * Mit dieser Methode wird eine neue Bestellung an den Server übermittelt.
-         *
-         * @param params welche Datentypen die Informationen haben, die im Hintergrund bearbeitet werden sollen.
-         * @return gibt null zurück, da Informationen lediglich an den Server geschickt werden.
-         */
-        @Override
-        protected Void doInBackground(Void... params) {
-
-            RestTemplate restTemplate = new RestTemplate();
-
-            try {
-                String itemIDs = Order.joinIntIDsIntoString(MainActivity.orderItemIDs);
-                System.out.println(itemIDs);
-                int tableID = MainActivity.selectedTable.getTableID();
-                System.out.println(tableID);
-                double price = storeOfSum;
-                System.out.println(price);
-
-                Order order = new Order(itemIDs, tableID, price, isOrderPaid);
-
-                //Order übertragen
-                // TODO Das Datum kann nicht übertragen werden. Wird momentan auf controllerseite erzeugt.
-                restTemplate.postForLocation(url + "/order/", order, Order.class);
-
-            } catch (HttpClientErrorException e) {
-
-                text = e.getResponseBodyAsString();
-                return null;
-
-            }catch (Exception e){
-
-                text = "Die Verbindung zum Server ist unterbrochen worden!";
-                e.printStackTrace();
-                return null;
-            }
-            return null;
-        }
-
-        /**
-         * Falls bei der Übertragung der Bestellung zum Server ein Fehler auftritt, wird mithilfe der ShowToast-Methode dieser Fehler dargestellt.
-         * @param aVoid wird hier nicht benötigt
-         */
-        @Override
-        protected void onPostExecute(Void aVoid) {
-                super.onPostExecute(aVoid);
-
-                showToast(text);
-
-
-            }
-    }
     /**
      * Diese Klasse wird dafür verwendet, eine bereits bestehende Bestellung, die mithilfe der Applikation upgedated wurde, an den Server weiterzuleiten.
      */
+
     private class UpdateOrder extends AsyncTask<Void, Void, Void> {
 
         /**
@@ -490,17 +438,19 @@ public class ItemSelect extends Fragment {
             RestTemplate restTemplate = new RestTemplate();
 
             try {
-                String itemIDs = Order.joinIntIDsIntoString(MainActivity.orderItemIDs);
-                System.out.println(itemIDs);
-                int tableID = MainActivity.selectedTable.getTableID();
-                System.out.println(tableID);
-                double price = storeOfSum;
-                System.out.println(price);
-                Order order = new Order(MainActivity.selectedOrderID, itemIDs, tableID, price, null, isOrderPaid);
-                restTemplate.put(url + "/order/" + order.getOrderID(), order);
+
+                //Order übertragen
+                restTemplate.postForLocation(url + "/orderedItem/", MainActivity.orderedItems,
+                        HttpMethod.POST,
+                        new ParameterizedTypeReference<ArrayList<OrderedItem>>(){});
+
+                if (!isOrderPaid) {
+                    MainActivity.orderedItems.clear();
+                }
 
             } catch (HttpClientErrorException e){
                 text = e.getResponseBodyAsString();
+
             }catch (Exception e){
                 text = "Die Verbindung zum Server ist unterbrochen worden!";
                 e.printStackTrace();
@@ -534,6 +484,16 @@ public class ItemSelect extends Fragment {
         fragmentTransaction.commit();
 
     }
+
+    private void showPayFragment(){
+
+        PayOrder fragment = new PayOrder(storeOfSum);
+        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.frame, fragment);
+        fragmentTransaction.commit();
+
+    }
+
     /**
      * Methode, die den übergebenen Text auf dem Smartphone darstellt.
      * @param text Der Text welcher dargestellt werden soll.
