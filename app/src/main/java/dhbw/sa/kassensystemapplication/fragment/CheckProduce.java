@@ -18,11 +18,13 @@ import android.widget.Toast;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 
+import dhbw.sa.kassensystemapplication.Entity;
 import dhbw.sa.kassensystemapplication.MainActivity;
 import dhbw.sa.kassensystemapplication.R;
 import dhbw.sa.kassensystemapplication.entity.Item;
@@ -139,24 +141,34 @@ public class CheckProduce extends Fragment {
 
     private Table findTableToOrder(int orderID) {
 
-        int tableID = -1;
-        for (Order order: MainActivity.allOrders){
+        System.out.println("----------\nOrder-ID: " + orderID);
 
+        int tableID = 0;
+        Order debugOrder = null;
+        Table debugTable = null;
+
+        for (Order order: MainActivity.allOrders){
+            debugOrder = order;
             if(order.getOrderID() == orderID){
                 tableID = order.getTable();
+
+                System.out.println("\tTable-ID: " + tableID);
                 break;
             }
-
         }
 
         for (Table table: MainActivity.allTables){
-
             if (table.getTableID() == tableID){
+                debugTable = table;
+                System.out.println("\tTable-Name: " + table.getName());
                 return table;
             }
 
         }
+        if(orderID == 52)
+            System.out.println("stop");
 
+        System.out.println("\tnix gefunden");
         return null;
     }
 
@@ -168,10 +180,9 @@ public class CheckProduce extends Fragment {
             RestTemplate restTemplate = new RestTemplate();
 
             try {
-                //Order übertragen
-                restTemplate.put(url + "/orderedItem", MainActivity.allunproducedItems,
-                        HttpMethod.PUT,
-                        new ParameterizedTypeReference<ArrayList<OrderedItem>>(){});
+                ResponseEntity<Integer> responseEntity = restTemplate.exchange
+                        (MainActivity.url + "/orderedItem", HttpMethod.PUT,
+                                Entity.getEntity(MainActivity.allunproducedItems),Integer.class );
 
                 MainActivity.allunproducedItems.clear();
 

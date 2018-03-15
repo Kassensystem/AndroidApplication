@@ -26,16 +26,15 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import dhbw.sa.kassensystemapplication.Entity;
 import dhbw.sa.kassensystemapplication.MainActivity;
 import dhbw.sa.kassensystemapplication.R;
-import dhbw.sa.kassensystemapplication.entity.Category;
 import dhbw.sa.kassensystemapplication.entity.Item;
 import dhbw.sa.kassensystemapplication.entity.Order;
 import dhbw.sa.kassensystemapplication.entity.OrderedItem;
 import dhbw.sa.kassensystemapplication.entity.Table;
 
 
-import static dhbw.sa.kassensystemapplication.MainActivity.orderedItems;
 import static dhbw.sa.kassensystemapplication.MainActivity.url;
 
 
@@ -166,7 +165,7 @@ public class TableSelection extends Fragment {
                 ResponseEntity<ArrayList<Table>> responseEntity =
                         restTemplate.exchange
                                 (MainActivity.url + "/tables", HttpMethod.GET,
-                                        null, new ParameterizedTypeReference<ArrayList<Table>>() {
+                                        Entity.getEntity(null), new ParameterizedTypeReference<ArrayList<Table>>() {
                                         });
                 ArrayList<Table> tables = responseEntity.getBody();
                 System.out.println(responseEntity.getStatusCode());
@@ -180,6 +179,7 @@ public class TableSelection extends Fragment {
 
             } catch (HttpClientErrorException e){
                 text = e.getResponseBodyAsString();
+                e.printStackTrace();
                  return null;
             } catch (ResourceAccessException e) {
                 text = "Es konnte keine Verbindung aufgebaut werden.";
@@ -265,12 +265,12 @@ public class TableSelection extends Fragment {
 
             RestTemplate restTemplate = new RestTemplate();
 
-
             try {
                 ResponseEntity<ArrayList<Item>> responseEntity =
                         restTemplate.exchange
-                                ( MainActivity.url + "/items/", HttpMethod.GET,
-                                        null, new ParameterizedTypeReference<ArrayList<Item>>() {});
+                                (MainActivity.url + "/items", HttpMethod.GET,
+                                        Entity.getEntity(null), new ParameterizedTypeReference<ArrayList<Item>>() {
+                                        });
 
                 MainActivity.allItems = responseEntity.getBody();
                 text = null;
@@ -322,35 +322,16 @@ public class TableSelection extends Fragment {
         protected ArrayList<Order> doInBackground(Void... params) {
             try {
                 RestTemplate restTemplate = new RestTemplate();
-/*
-                //restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+
+
                 ResponseEntity<ArrayList<Order>> responseEntity =
                         restTemplate.exchange
                                 (MainActivity.url + "/orders", HttpMethod.GET,
-                                        null, new ParameterizedTypeReference<ArrayList<Order>>() {});
-                ArrayList<Order> orders = responseEntity.getBody();
-  */              text = null;
+                                        Entity.getEntity(null), new ParameterizedTypeReference<ArrayList<Order>>() {
+                                        });
+                MainActivity.allOrders = responseEntity.getBody();
 
-                List<LinkedHashMap<String, Object>> orderMap = restTemplate.getForObject(MainActivity.url + "/orders", List.class);
-                if(orderMap != null) {
-                    MainActivity.allOrders.clear();
-                    for (LinkedHashMap<String, Object> map:orderMap){
-
-                        DateTime date = new DateTime(map.get("date"));
-                        int id = (Integer)map.get("orderID");
-
-                        Order order = new Order (id,
-                                //(String)map.get("itemIDs"),
-                                (int)map.get("tableID"),
-                                (double)map.get("price"),
-                                date,
-                                (Boolean)map.get("paid"));
-
-
-                        MainActivity.allOrders.add(order);
-                    }
-                }
-
+                text = null;
                 return null;
 
             } catch (HttpClientErrorException e){
@@ -396,16 +377,22 @@ public class TableSelection extends Fragment {
 
 
             try {
+
                 Order order = new Order(MainActivity.selectedTable.getTableID());
-                URI uri = restTemplate.postForLocation(url + "/order/", order, Order.class);
-                Integer orderId = Integer.parseInt(uri.toString());
-                System.out.println("--------------------------------------------------------------\n \n \n \n"+orderId);
+
+                ResponseEntity<Integer> responseEntity = restTemplate.exchange
+                    (MainActivity.url + "/order", HttpMethod.POST,
+                        Entity.getEntity(order),Integer.class );
+
+                Integer orderId = responseEntity.getBody();
                 MainActivity.selectedOrderID = orderId;
+                System.out.println("----------------------------------\n \n \n \n"+orderId);
 
 
             } catch (HttpClientErrorException e){
 
                 text = e.getResponseBodyAsString();
+                e.printStackTrace();
                 return null;
             }catch (Exception e){
 
@@ -436,7 +423,7 @@ public class TableSelection extends Fragment {
                 ResponseEntity<ArrayList<OrderedItem>> responseEntity =
                         restTemplate.exchange
                                 ( MainActivity.url + "/orderedItems/"+MainActivity.selectedOrderID, HttpMethod.GET,
-                                        null, new ParameterizedTypeReference<ArrayList<OrderedItem>>() {});
+                                        Entity.getEntity(null), new ParameterizedTypeReference<ArrayList<OrderedItem>>() {});
 
                 MainActivity.orderedItems = responseEntity.getBody();
                 text = null;
@@ -483,10 +470,10 @@ public class TableSelection extends Fragment {
                 ResponseEntity<ArrayList<OrderedItem>> responseEntity =
                         restTemplate.exchange
                                 (MainActivity.url + "/unproducedOrderedItems", HttpMethod.GET,
-                                        null, new ParameterizedTypeReference<ArrayList<OrderedItem>>() {
+                                        Entity.getEntity(null), new ParameterizedTypeReference<ArrayList<OrderedItem>>() {
                                         });
-                ArrayList<OrderedItem> orderedItems = responseEntity.getBody();
 
+                ArrayList<OrderedItem> orderedItems = responseEntity.getBody();
                 MainActivity.allunproducedItems = orderedItems;
 
                 text = null;

@@ -31,6 +31,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.ArrayList;
 
 
+import dhbw.sa.kassensystemapplication.Entity;
 import dhbw.sa.kassensystemapplication.entity.OrderedItem;
 import static dhbw.sa.kassensystemapplication.MainActivity.orderedItems;
 import dhbw.sa.kassensystemapplication.MainActivity;
@@ -439,10 +440,9 @@ public class ItemSelect extends Fragment {
 
             try {
 
-                //Order übertragen
-                restTemplate.postForLocation(url + "/orderedItem/", MainActivity.orderedItems,
-                        HttpMethod.POST,
-                        new ParameterizedTypeReference<ArrayList<OrderedItem>>(){});
+                ResponseEntity<Integer> responseEntity = restTemplate.exchange
+                        (MainActivity.url + "/orderedItem", HttpMethod.POST,
+                                Entity.getEntity(MainActivity.orderedItems),Integer.class );
 
                 if (!isOrderPaid) {
                     MainActivity.orderedItems.clear();
@@ -450,6 +450,7 @@ public class ItemSelect extends Fragment {
 
             } catch (HttpClientErrorException e){
                 text = e.getResponseBodyAsString();
+                e.printStackTrace();
 
             }catch (Exception e){
                 text = "Die Verbindung zum Server ist unterbrochen worden!";

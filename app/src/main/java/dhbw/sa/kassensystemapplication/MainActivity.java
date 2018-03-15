@@ -1,6 +1,5 @@
 package dhbw.sa.kassensystemapplication;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
@@ -17,7 +16,6 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
-import dhbw.sa.kassensystemapplication.entity.Category;
 import dhbw.sa.kassensystemapplication.entity.Item;
 import dhbw.sa.kassensystemapplication.entity.Order;
 import dhbw.sa.kassensystemapplication.entity.OrderedItem;
@@ -56,6 +54,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public static int selectedOrderID;
     public static boolean orderIsPaid;
     public static String loginName;
+    public static String loginPasswordHash;
     public static String loginPassword;
 
 
@@ -99,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         heigthPixels = metrics.heightPixels;
 
         //Load the URL. If there is non, set URL standard
-        if (!loadURL()){
+        if (!loadSavedSettings()){
 
             url = "http://192.168.178.25:8080/api";
 
@@ -208,13 +207,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     /**
      * In dieser Methode werden die IP-Adresse und die URL geladen.
-     * Hierfür wird in der Klasse AdjustUrl die IP-Adresse und die URL über den Lebenszyklus der Applikation gespeichert
+     * Hierfür wird in der Klasse adjustUrl die IP-Adresse und die URL über den Lebenszyklus der Applikation gespeichert
      * @return true, wenn bereits ein URL gespeichert wurde. False wenn noch kein URL gespeichert wurde
      */
-    public boolean loadURL(){
+    public boolean loadSavedSettings(){
 
         // Get the ip from the "store" of the app
         SharedPreferences shared = getPreferences(0);
+
+        loginPassword = shared.getString("passwordhash", "");
+        loginName = shared.getString("loginname","");
+        loginPasswordHash = String.valueOf(loginPassword.hashCode());
 
         // If there is nothing saved before, the return is false
         ip = shared.getString("ip","");
@@ -229,6 +232,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
 }
+
  /*
   * TODO: Schauen ob mab das hinbekommt, eine Meldung zu geben ob der Server gerade geschlossen wurde
   * TODO: SO wie der Moosi gemeint hat, die Anzahl der Artikel darstellen

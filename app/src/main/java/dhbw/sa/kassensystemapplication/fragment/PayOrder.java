@@ -21,6 +21,7 @@ import android.widget.Toast;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
@@ -28,6 +29,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 
+import dhbw.sa.kassensystemapplication.Entity;
 import dhbw.sa.kassensystemapplication.MainActivity;
 import dhbw.sa.kassensystemapplication.R;
 import dhbw.sa.kassensystemapplication.entity.Item;
@@ -390,10 +392,11 @@ public class PayOrder extends Fragment {
             RestTemplate restTemplate = new RestTemplate();
 
             try {
-                //Order übertragen
-                restTemplate.put(url + "/orderedItem", MainActivity.orderedItems,
-                        HttpMethod.PUT,
-                        new ParameterizedTypeReference<ArrayList<OrderedItem>>(){});
+
+                ResponseEntity<Integer> responseEntity = restTemplate.exchange
+                        (MainActivity.url + "/orderedItem", HttpMethod.PUT,
+                                Entity.getEntity(MainActivity.orderedItems),Integer.class );
+
 
                 MainActivity.orderedItems.clear();
                 namesFromItems.clear();
@@ -429,22 +432,12 @@ public class PayOrder extends Fragment {
         protected Void doInBackground(Void... params) {
 
             RestTemplate restTemplate = new RestTemplate();
-            HttpHeaders responseHeaders = new HttpHeaders();
-            URI uri = null;
-            try {
-                uri = new URI(MainActivity.loginName, MainActivity.loginPassword,";");
-                System.out.println("----------------------\n \n \n \n");
-                System.out.println(uri);
-
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
-            }
-            responseHeaders.setLocation(uri);
 
             try {
                 //Den Bon Ausdrucken
-                restTemplate.postForLocation(url + "/printOrder/"+MainActivity.selectedOrderID,
-                        HttpMethod.POST);
+                ResponseEntity<Integer> responseEntity = restTemplate.exchange
+                        (MainActivity.url + "/printOrder/"+MainActivity.selectedOrderID, HttpMethod.POST,
+                                Entity.getEntity(null),Integer.class);
 
             } catch (HttpClientErrorException e){
                 text = e.getResponseBodyAsString();

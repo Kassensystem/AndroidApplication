@@ -1,6 +1,7 @@
 package dhbw.sa.kassensystemapplication.fragment;
 
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -43,23 +44,26 @@ public class LoginFragment extends Fragment {
         loginPassword = v.findViewById(R.id.loginPassword);
         loginButton = v.findViewById(R.id.loginButton);
 
+        loginNameEditText.setText(MainActivity.loginName);
+        loginPassword.setText(MainActivity.loginPassword);
+
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
                 password = loginPassword.getText().toString();
-                try {
 
-                    MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
-                    messageDigest.update(password.getBytes());
-                    encryptedString = new String(messageDigest.digest());
+                encryptedString = String.valueOf(password.hashCode());
 
-                    MainActivity.loginPassword=encryptedString;
-                    MainActivity.loginName = loginNameEditText.getText().toString();
+                MainActivity.loginPasswordHash=encryptedString;
+                MainActivity.loginName = loginNameEditText.getText().toString();
 
-                } catch (NoSuchAlgorithmException e) {
-                    e.printStackTrace();
-                }
+                SharedPreferences shared = getActivity().getPreferences(0);
+                SharedPreferences.Editor editor = shared.edit();
+                editor.putString("loginname",loginNameEditText.getText().toString());
+                editor.putString("passwordhash", password);
+                editor.apply();
+
 
                 showTableFragment();
 
