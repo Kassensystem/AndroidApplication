@@ -16,6 +16,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -38,6 +39,7 @@ public class adjustUrl extends Fragment {
 
     private Button confirmURL;
     private EditText editTextURL;
+    private TextView textView;
 
     public adjustUrl() {
 
@@ -62,6 +64,7 @@ public class adjustUrl extends Fragment {
         editTextURL = v.findViewById(R.id.editTextURL);
         editTextURL.setGravity(Gravity.CENTER);
         confirmURL = v.findViewById(R.id.confirmURL);
+        textView = v.findViewById(R.id.textViewURL);
 
         //Set the loaded URL in the EditText View
         editTextURL.setText(MainActivity.ip);
@@ -93,6 +96,7 @@ public class adjustUrl extends Fragment {
                 getActivity().setTitle("Bestellung aufgeben");
             }
         });
+
 
 
         return v;

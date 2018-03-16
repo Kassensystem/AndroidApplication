@@ -80,6 +80,7 @@ public class LoginFragment extends Fragment {
             }
         });
 
+
         return v;
     }
     private void showTableFragment(){
