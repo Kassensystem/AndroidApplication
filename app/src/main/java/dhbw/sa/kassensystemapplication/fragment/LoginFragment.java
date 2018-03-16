@@ -74,6 +74,7 @@ public class LoginFragment extends Fragment {
     }
     private void showTableFragment(){
 
+        getActivity().setTitle("Bestellung aufgeben");
         TableSelection fragment = new TableSelection();
         FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.frame, fragment);

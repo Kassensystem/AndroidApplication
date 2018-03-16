@@ -326,7 +326,6 @@ public class ItemSelect extends Fragment {
             public void onClick(View view) {
                 isOrderPaid = false;
                 new UpdateOrder().execute();
-                showTableFragment();
 
 
             }
@@ -337,7 +336,6 @@ public class ItemSelect extends Fragment {
             public void onClick(View view) {
                 isOrderPaid = true;
                 new UpdateOrder().execute();
-                showPayFragment();
 
             }
         });
@@ -408,7 +406,7 @@ public class ItemSelect extends Fragment {
             }
 
 
-            MainActivity.allItems.remove(orderedItem);
+            MainActivity.orderedItems.remove(orderedItem);
 
             result = storeOfSum;
 
@@ -447,6 +445,7 @@ public class ItemSelect extends Fragment {
                 if (!isOrderPaid) {
                     MainActivity.orderedItems.clear();
                 }
+                text = null;
 
             } catch (HttpClientErrorException e){
                 text = e.getResponseBodyAsString();
@@ -470,10 +469,70 @@ public class ItemSelect extends Fragment {
 
             showToast(text);
 
+            if(text == null){
+
+                if (isOrderPaid) {
+                    new GetOrderedItems().execute();
+                } else {
+                    showTableFragment();
+                }
+
+            }
+
         }
 
 
     }
+
+    private class GetOrderedItems extends AsyncTask<Void,Void,ArrayList<OrderedItem>> {
+
+        @Override
+        protected ArrayList<OrderedItem> doInBackground(Void... params) {
+
+            RestTemplate restTemplate = new RestTemplate();
+
+
+            try {
+                ResponseEntity<ArrayList<OrderedItem>> responseEntity =
+                        restTemplate.exchange
+                                ( MainActivity.url + "/orderedItems/"+MainActivity.selectedOrderID, HttpMethod.GET,
+                                        Entity.getEntity(null), new ParameterizedTypeReference<ArrayList<OrderedItem>>() {});
+
+                MainActivity.orderedItems = responseEntity.getBody();
+                text = null;
+
+                return MainActivity.orderedItems;
+
+            } catch (HttpClientErrorException e){
+                text = e.getResponseBodyAsString();
+                return null;
+            } catch (ResourceAccessException e) {
+                text = "Es konnte keine Verbindung aufgebaut werden.";
+                return null;
+            }
+            catch (Exception e){
+                text ="Ein Unbekannter Fehler ist aufgetreten";
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        protected void onPostExecute( ArrayList<OrderedItem> orderedItems) {
+            super.onPostExecute(orderedItems);
+
+            if(text != null){
+                showToast(text);
+                text = null;
+            }
+
+            if (orderedItems != null) {
+                MainActivity.orderedItems = orderedItems;
+                showPayFragment();
+            }
+
+        }
+    }
+
     /**
      * Mithilfe dieser Methode wird die Klasse TableSelection aufgerufen und die Klasse ItemSelect wird nicht mehr dargestellt.
      */
@@ -488,7 +547,7 @@ public class ItemSelect extends Fragment {
 
     private void showPayFragment(){
 
-        PayOrder fragment = new PayOrder(storeOfSum);
+        PayOrder fragment = new PayOrder();
         FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.frame, fragment);
         fragmentTransaction.commit();

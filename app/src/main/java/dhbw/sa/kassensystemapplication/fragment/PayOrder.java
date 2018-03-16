@@ -28,6 +28,7 @@ import org.springframework.web.client.RestTemplate;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.IllegalFormatCodePointException;
 
 import dhbw.sa.kassensystemapplication.Entity;
 import dhbw.sa.kassensystemapplication.MainActivity;
@@ -55,9 +56,7 @@ public class PayOrder extends Fragment {
     public static String text = null;
 
     @SuppressLint("ValidFragment")
-    public PayOrder(double storeOfSum) {
-        this.storeOfSum = storeOfSum;
-    }
+
     public PayOrder() {
     }
 
@@ -77,6 +76,23 @@ public class PayOrder extends Fragment {
         final int pix = (int) TypedValue.applyDimension (TypedValue.COMPLEX_UNIT_DIP, 10, this.getResources().getDisplayMetrics());
         float posY = pix;
 
+        for(OrderedItem orderedItem: MainActivity.orderedItems){
+
+            if(!orderedItem.isItemPaid()){
+
+                for (Item item: MainActivity.allItems){
+
+                    if(item.getItemID() == orderedItem.getItemID()){
+
+                        storeOfSum = storeOfSum + item.getRetailprice();
+
+                    }
+                }
+
+            }
+
+        }
+
         priceToPay.setText(Double.toString(storeOfSum)+" €");
         priceToPay.setTextColor(Color.RED);
         priceToPay.setTextSize(pix*2);
@@ -89,148 +105,152 @@ public class PayOrder extends Fragment {
 
         for(OrderedItem orderedItem: MainActivity.orderedItems) {
 
-            int sumOfItemIDsInOrder = 0;
-            int itemID = orderedItem.getItemID();
-            String name = null;
+            if (!orderedItem.isItemPaid()) {
+                int sumOfItemIDsInOrder = 0;
+                int itemID = orderedItem.getItemID();
+                String name = null;
 
-            //Get the right sum of orderedItems:
-            for(OrderedItem item: MainActivity.orderedItems){
-                if(itemID == item.getItemID()){
-                    sumOfItemIDsInOrder++;
-                }
-            }
+                //Get the right sum of orderedItems:
+                for(OrderedItem item: MainActivity.orderedItems){
+                    if(itemID == item.getItemID()){
 
-            //Get the name of the Item:
-            for (Item item : MainActivity.allItems) {
+                        sumOfItemIDsInOrder++;
 
-                if (itemID == item.getItemID()) {
-                    name = item.getName();
-                    break;
+                    }
                 }
 
-            }
+                //Get the name of the Item:
+                for (Item item : MainActivity.allItems) {
 
-            if (!isItemAlreadySelected(name)) {
+                    if (itemID == item.getItemID()) {
+                        name = item.getName();
+                        break;
+                    }
 
-                namesFromItems.add(name);
+                }
 
-                final TextView nameTextView = new TextView(getActivity());
-                final TextView quantityTextField = new TextView(getActivity());
-                final TextView inventoryTextView = new TextView(getActivity());
-                Button plus = new Button(getActivity());
-                Button minus = new Button(getActivity());
+                if (!isItemAlreadySelected(name)) {
 
-                // Params for the TextView txt
-                nameTextView.setLayoutParams(new LinearLayout.LayoutParams(30 * pix, 10 * pix));
-                nameTextView.setText(name);
-                nameTextView.setX(pix / 10);
-                nameTextView.setY(posY);
-                nameTextView.setPadding(pix, pix, pix, pix);
-                relativeLayout.addView(nameTextView);
+                    namesFromItems.add(name);
 
-                // Params for the TextView inventory
-                inventoryTextView.setLayoutParams(new LinearLayout.LayoutParams(30 * pix, 10 * pix));
-                inventoryTextView.setText(Integer.toString(sumOfItemIDsInOrder));
-                inventoryTextView.setX(15 * pix);
-                inventoryTextView.setY(posY);
-                inventoryTextView.setPadding(pix, pix, pix, pix);
-                relativeLayout.addView(inventoryTextView);
+                    final TextView nameTextView = new TextView(getActivity());
+                    final TextView quantityTextField = new TextView(getActivity());
+                    final TextView inventoryTextView = new TextView(getActivity());
+                    Button plus = new Button(getActivity());
+                    Button minus = new Button(getActivity());
 
-                // Params for the TextView quantityTextField
-                quantityTextField.setLayoutParams(new LinearLayout.LayoutParams(8 * pix, 10 * pix));
-                quantityTextField.setText("0");
-                quantityTextField.setX(18 * pix);
-                quantityTextField.setY(posY);
-                quantityTextField.setPadding(pix, pix, pix, pix);
-                relativeLayout.addView(quantityTextField);
+                    // Params for the TextView txt
+                    nameTextView.setLayoutParams(new LinearLayout.LayoutParams(30 * pix, 10 * pix));
+                    nameTextView.setText(name);
+                    nameTextView.setX(pix / 10);
+                    nameTextView.setY(posY);
+                    nameTextView.setPadding(pix, pix, pix, pix);
+                    relativeLayout.addView(nameTextView);
 
-                // Set the Parameter for the Buttons plus and minus
-                // Params for the Button: +
-                plus.setLayoutParams(new LinearLayout.LayoutParams(4 * pix, 4 * pix));
-                plus.setText("+");
-                plus.setX(21 * pix);
-                plus.setPadding(pix, pix, pix, pix);
-                plus.setY(posY);
-                relativeLayout.addView(plus);
+                    // Params for the TextView inventory
+                    inventoryTextView.setLayoutParams(new LinearLayout.LayoutParams(30 * pix, 10 * pix));
+                    inventoryTextView.setText(Integer.toString(sumOfItemIDsInOrder));
+                    inventoryTextView.setX(15 * pix);
+                    inventoryTextView.setY(posY);
+                    inventoryTextView.setPadding(pix, pix, pix, pix);
+                    relativeLayout.addView(inventoryTextView);
 
-                //Params for the Button: -
-                minus.setLayoutParams(new LinearLayout.LayoutParams(4 * pix, 4 * pix));
-                minus.setText("-");
-                minus.setX(25 * pix);
-                minus.setPadding(pix, pix, pix, pix);
-                minus.setY(posY);
-                relativeLayout.addView(minus);
+                    // Params for the TextView quantityTextField
+                    quantityTextField.setLayoutParams(new LinearLayout.LayoutParams(8 * pix, 10 * pix));
+                    quantityTextField.setText("0");
+                    quantityTextField.setX(18 * pix);
+                    quantityTextField.setY(posY);
+                    quantityTextField.setPadding(pix, pix, pix, pix);
+                    relativeLayout.addView(quantityTextField);
 
-                //The Y-position need to crow with the quantityTextField of Items!
-                posY = posY + 5 * pix;
+                    // Set the Parameter for the Buttons plus and minus
+                    // Params for the Button: +
+                    plus.setLayoutParams(new LinearLayout.LayoutParams(4 * pix, 4 * pix));
+                    plus.setText("+");
+                    plus.setX(21 * pix);
+                    plus.setPadding(pix, pix, pix, pix);
+                    plus.setY(posY);
+                    relativeLayout.addView(plus);
 
-                /************************* PLus Und Minus Botton **********/
+                    //Params for the Button: -
+                    minus.setLayoutParams(new LinearLayout.LayoutParams(4 * pix, 4 * pix));
+                    minus.setText("-");
+                    minus.setX(25 * pix);
+                    minus.setPadding(pix, pix, pix, pix);
+                    minus.setY(posY);
+                    relativeLayout.addView(minus);
 
-                plus.setOnClickListener(new View.OnClickListener() {
+                    //The Y-position need to crow with the quantityTextField of Items!
+                    posY = posY + 5 * pix;
 
-                    @Override
-                    public void onClick(View v) {
+                    /************************* PLus Und Minus Botton **********/
 
-                        if (payAll.isChecked()) {
-                            if(Integer.parseInt((String)inventoryTextView.getText())>0) {
+                    plus.setOnClickListener(new View.OnClickListener() {
 
-                                // Update the quantity TextView
-                                int selectedQuantity = Integer.parseInt((String)quantityTextField.getText());
-                                selectedQuantity++;
+                        @Override
+                        public void onClick(View v) {
 
-                                // Update the inventory TextView
-                                int numberOfInventory = Integer.parseInt((String) inventoryTextView.getText());
-                                numberOfInventory--;
+                            if (payAll.isChecked()) {
+                                if(Integer.parseInt((String)inventoryTextView.getText())>0) {
 
-                                // Calculate the Sum
-                                double result = UpdateSum(true,(String)nameTextView.getText());
+                                    // Update the quantity TextView
+                                    int selectedQuantity = Integer.parseInt((String)quantityTextField.getText());
+                                    selectedQuantity++;
 
-                                // Set the updated quantity and inventory
-                                quantityTextField.setText(Integer.toString(selectedQuantity));
+                                    // Update the inventory TextView
+                                    int numberOfInventory = Integer.parseInt((String) inventoryTextView.getText());
+                                    numberOfInventory--;
+
+                                    // Calculate the Sum
+                                    double result = UpdateSum(true,(String)nameTextView.getText());
+
+                                    // Set the updated quantity and inventory
+                                    quantityTextField.setText(Integer.toString(selectedQuantity));
+                                    inventoryTextView.setText(Integer.toString(numberOfInventory));
+
+                                    // Set the updated Sum
+                                    priceToPay.setText(Double.toString(result) + " €");
+
+                                }
+                            }
+                        }
+
+                    });
+
+                    //Listener for the Button: - (The selected item will be remove from the order)
+                    minus.setOnClickListener(new View.OnClickListener() {
+
+                        @Override
+                        public void onClick(View v) {
+
+                            if (payAll.isChecked()) {
+                                //Get the quantity and the inventory
+                                int selectedQuantity = Integer.parseInt((String) quantityTextField.getText());
+                                int numberOfInventory = Integer.parseInt((String)inventoryTextView.getText());
+
+                                // request if there is an Item in the Order
+                                if (selectedQuantity > 0) {
+
+                                    selectedQuantity--;
+                                    numberOfInventory++;
+
+                                    // Update the sumTextView and set the TextView Sum
+                                    double result = UpdateSum(false, (String)nameTextView.getText());
+                                    priceToPay.setText(Double.toString(result) + " €");
+
+                                }
+
+                                // Set the TextViews quantity and inventory
                                 inventoryTextView.setText(Integer.toString(numberOfInventory));
-
-                                // Set the updated Sum
-                                priceToPay.setText(Double.toString(result) + " €");
-
-                            }
-                        }
-                    }
-
-                });
-
-                //Listener for the Button: - (The selected item will be remove from the order)
-                minus.setOnClickListener(new View.OnClickListener() {
-
-                    @Override
-                    public void onClick(View v) {
-
-                        if (payAll.isChecked()) {
-                            //Get the quantity and the inventory
-                            int selectedQuantity = Integer.parseInt((String) quantityTextField.getText());
-                            int numberOfInventory = Integer.parseInt((String)inventoryTextView.getText());
-
-                            // request if there is an Item in the Order
-                            if (selectedQuantity > 0) {
-
-                                selectedQuantity--;
-                                numberOfInventory++;
-
-                                // Update the sumTextView and set the TextView Sum
-                                double result = UpdateSum(false, (String)nameTextView.getText());
-                                priceToPay.setText(Double.toString(result) + " €");
-
+                                quantityTextField.setText(Integer.toString(selectedQuantity));
                             }
 
-                            // Set the TextViews quantity and inventory
-                            inventoryTextView.setText(Integer.toString(numberOfInventory));
-                            quantityTextField.setText(Integer.toString(selectedQuantity));
                         }
 
-                    }
-
-                });
+                    });
 
 
+                }
             }
 
         }
