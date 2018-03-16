@@ -9,6 +9,7 @@ public class OrderedItem {
     @JsonProperty private int itemID;
     @JsonProperty private boolean itemPaid;
     @JsonProperty private boolean itemProduced;
+    @JsonProperty private String comment;
 
     public OrderedItem() {}
 
@@ -78,4 +79,11 @@ public class OrderedItem {
         this.itemPaid = itemIsPaid;
     }
 
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public String getComment() {
+        return comment;
+    }
 }

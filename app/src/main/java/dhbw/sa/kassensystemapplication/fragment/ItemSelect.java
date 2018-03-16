@@ -101,7 +101,8 @@ public class ItemSelect extends Fragment {
         sum.setText("0.0 €");
 
         // declare the universal pixels
-        final int pix = (int) TypedValue.applyDimension (TypedValue.COMPLEX_UNIT_DIP, 10, this.getResources().getDisplayMetrics());
+        final int pix = (int) TypedValue.applyDimension (TypedValue.COMPLEX_UNIT_DIP, 10,
+                this.getResources().getDisplayMetrics());
         float posY = pix;
 
         // declare the relative Layout. There the Nodes for the Order get added.
@@ -175,6 +176,16 @@ public class ItemSelect extends Fragment {
                 nameTextView.setPadding(pix, pix, pix, pix);
                 relativeLayout.addView(nameTextView);
 
+                final int finalI = i;
+                nameTextView.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View view) {
+
+                        showAnnotationFragment(MainActivity.allItems.get(finalI));
+
+                        return false;
+                    }
+                });
 
 
                 // Params for the TextView inventory
@@ -481,8 +492,8 @@ public class ItemSelect extends Fragment {
 
         }
 
-
     }
+
 
     private class GetOrderedItems extends AsyncTask<Void,Void,ArrayList<OrderedItem>> {
 
@@ -531,8 +542,8 @@ public class ItemSelect extends Fragment {
             }
 
         }
-    }
 
+    }
     /**
      * Mithilfe dieser Methode wird die Klasse TableSelection aufgerufen und die Klasse ItemSelect wird nicht mehr dargestellt.
      */
@@ -548,6 +559,16 @@ public class ItemSelect extends Fragment {
     private void showPayFragment(){
 
         PayOrder fragment = new PayOrder();
+        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.frame, fragment);
+        fragmentTransaction.commit();
+
+    }
+
+    private void showAnnotationFragment(Item item) {
+
+        getActivity().setTitle(item.getName());
+        AnnotationFragment fragment = new AnnotationFragment(item);
         FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.frame, fragment);
         fragmentTransaction.commit();
