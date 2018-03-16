@@ -18,25 +18,18 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.IllegalFormatCodePointException;
 
 import dhbw.sa.kassensystemapplication.Entity;
 import dhbw.sa.kassensystemapplication.MainActivity;
 import dhbw.sa.kassensystemapplication.R;
 import dhbw.sa.kassensystemapplication.entity.Item;
 import dhbw.sa.kassensystemapplication.entity.OrderedItem;
-
-import static dhbw.sa.kassensystemapplication.MainActivity.url;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -54,6 +47,8 @@ public class PayOrder extends Fragment {
     public static ArrayList<String> namesFromItems = new ArrayList<>();
     public static double storeOfSum = 0;
     public static String text = null;
+    private double savePriceSeperat;
+    private double savePriceFull;
 
     @SuppressLint("ValidFragment")
 
@@ -84,7 +79,10 @@ public class PayOrder extends Fragment {
 
                     if(item.getItemID() == orderedItem.getItemID()){
 
-                        storeOfSum = storeOfSum + item.getRetailprice();
+                        storeOfSum = storeOfSum + (item.getRetailprice());
+                        storeOfSum = (double) ((int) storeOfSum + (Math.round(Math.pow(10, 3) * (storeOfSum - (int) storeOfSum))) / (Math.pow(10, 3)));
+
+                        savePriceFull = storeOfSum;
 
                     }
                 }
@@ -114,7 +112,9 @@ public class PayOrder extends Fragment {
                 for(OrderedItem item: MainActivity.orderedItems){
                     if(itemID == item.getItemID()){
 
-                        sumOfItemIDsInOrder++;
+                        if (!item.isItemPaid()) {
+                            sumOfItemIDsInOrder++;
+                        }
 
                     }
                 }
@@ -210,6 +210,11 @@ public class PayOrder extends Fragment {
 
                                     // Set the updated Sum
                                     priceToPay.setText(Double.toString(result) + " €");
+                                    if(payAll.isChecked()){
+
+                                        savePriceSeperat = result;
+
+                                    }
 
                                 }
                             }
@@ -237,6 +242,10 @@ public class PayOrder extends Fragment {
                                     // Update the sumTextView and set the TextView Sum
                                     double result = UpdateSum(false, (String)nameTextView.getText());
                                     priceToPay.setText(Double.toString(result) + " €");
+
+                                    if(payAll.isChecked()){
+                                        savePriceSeperat = result;
+                                    }
 
                                 }
 
@@ -294,48 +303,13 @@ public class PayOrder extends Fragment {
 
                 if (!payAll.isChecked()){
 
-                    storeOfSum = 0;
-                    for (OrderedItem orderedItem: MainActivity.orderedItems){
-
-                        for(Item item: MainActivity.allItems) {
-
-                            if (item.getItemID() == orderedItem.getItemID()) {
-
-                                storeOfSum = storeOfSum + (item.getRetailprice());
-                                storeOfSum = (double) ((int) storeOfSum + (Math.round(Math.pow(10, 3) * (storeOfSum - (int) storeOfSum))) / (Math.pow(10, 3)));
-
-                                priceToPay.setText(Double.toString(storeOfSum)+" €");
-
-                            }
-
-                        }
-
-                    }
+                    storeOfSum = savePriceFull;
+                    priceToPay.setText(storeOfSum+" €");
 
 
                 } else {
-                    storeOfSum = 0;
-                    priceToPay.setText("0.0 €");
-
-                    for (OrderedItem orderedItem: MainActivity.orderedItems){
-
-                        if (orderedItem.isItemPaid()) {
-                            for(Item item: MainActivity.allItems) {
-
-                                if (item.getItemID() == orderedItem.getItemID()) {
-
-                                    storeOfSum = storeOfSum + (item.getRetailprice());
-                                    storeOfSum = (double) ((int) storeOfSum + (Math.round(Math.pow(10, 3) * (storeOfSum - (int) storeOfSum))) / (Math.pow(10, 3)));
-
-                                    priceToPay.setText(Double.toString(storeOfSum)+" €");
-
-                                }
-
-                            }
-                        }
-
-                    }
-
+                    storeOfSum = savePriceSeperat;
+                    priceToPay.setText(storeOfSum+" €");
                 }
 
             }
@@ -357,41 +331,41 @@ public class PayOrder extends Fragment {
 
     private double UpdateSum(boolean isAdd, String itemName){
 
-            for(Item item: MainActivity.allItems){
 
-                if(item.getName().equals(itemName)){
+        for(Item item: MainActivity.allItems){
 
-                    if(isAdd){
+            if(item.getName().equals(itemName)){
 
-                        storeOfSum = storeOfSum + (item.getRetailprice());
-                        storeOfSum = (double) ((int) storeOfSum + (Math.round(Math.pow(10, 3) * (storeOfSum - (int) storeOfSum))) / (Math.pow(10, 3)));
+                if(isAdd){
 
-                        for (OrderedItem orderedItem: MainActivity.orderedItems){
+                    for (OrderedItem orderedItem: MainActivity.orderedItems){
 
-                            if (orderedItem.getItemID() == item.getItemID()&& !orderedItem.isItemPaid()){
+                        if (orderedItem.getItemID() == item.getItemID()){
 
-                                MainActivity.orderedItems.remove(orderedItem);
+                            if (!orderedItem.isItemPaid()) {
+                                storeOfSum = storeOfSum + (item.getRetailprice());
+                                storeOfSum = (double) ((int) storeOfSum + (Math.round(Math.pow(10, 3) * (storeOfSum - (int) storeOfSum))) / (Math.pow(10, 3)));
+                                //MainActivity.orderedItems.remove(orderedItem);
                                 orderedItem.setItemIsPaid(true);
-                                MainActivity.orderedItems.add(orderedItem);
+                                //MainActivity.orderedItems.add(orderedItem);
                                 return storeOfSum;
                             }
-
                         }
-                    } else {
 
-                        storeOfSum = storeOfSum - (item.getRetailprice());
-                        storeOfSum = (double) ((int) storeOfSum + (Math.round(Math.pow(10, 3) * (storeOfSum - (int) storeOfSum))) / (Math.pow(10, 3)));
+                    }
+                } else {
 
-                        for (OrderedItem orderedItem: MainActivity.orderedItems){
 
-                            if (orderedItem.getItemID() == item.getItemID() && orderedItem.isItemPaid()){
+                    for (OrderedItem orderedItem: MainActivity.orderedItems){
 
-                                MainActivity.orderedItems.remove(orderedItem);
-                                orderedItem.setItemIsPaid(false);
-                                MainActivity.orderedItems.add(orderedItem);
-                                return storeOfSum;
-                            }
+                        if (orderedItem.getItemID() == item.getItemID() && orderedItem.isItemPaid()){
 
+                            storeOfSum = storeOfSum - (item.getRetailprice());
+                            storeOfSum = (double) ((int) storeOfSum + (Math.round(Math.pow(10, 3) * (storeOfSum - (int) storeOfSum))) / (Math.pow(10, 3)));
+                            //MainActivity.orderedItems.remove(orderedItem);
+                            orderedItem.setItemIsPaid(false);
+                            //MainActivity.orderedItems.add(orderedItem);
+                            return storeOfSum;
                         }
 
                     }
@@ -399,6 +373,8 @@ public class PayOrder extends Fragment {
                 }
 
             }
+
+        }
 
         return storeOfSum;
 
@@ -420,6 +396,7 @@ public class PayOrder extends Fragment {
 
                 MainActivity.orderedItems.clear();
                 namesFromItems.clear();
+                storeOfSum = 0;
 
             } catch (HttpClientErrorException e){
                 text = e.getResponseBodyAsString();

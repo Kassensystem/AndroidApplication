@@ -215,9 +215,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Get the ip from the "store" of the app
         SharedPreferences shared = getPreferences(0);
 
-        loginPassword = shared.getString("passwordhash", "");
+        loginPasswordHash = shared.getString("passwordhash", "");
         loginName = shared.getString("loginname","");
-        loginPasswordHash = String.valueOf(loginPassword.hashCode());
 
         // If there is nothing saved before, the return is false
         ip = shared.getString("ip","");

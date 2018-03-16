@@ -356,6 +356,7 @@ public class ItemSelect extends Fragment {
 
 
         double result = 0;
+        int getItem = -1;
 
         //summation
         if (isAdd){
@@ -381,7 +382,7 @@ public class ItemSelect extends Fragment {
 
         //subtract
         } else {
-            OrderedItem orderedItem = null;
+
             // Search in all items, to get the retailprice
             for (int i = 0; i < MainActivity.allItems.size(); i++) {
 
@@ -391,11 +392,11 @@ public class ItemSelect extends Fragment {
                     storeOfSum = storeOfSum - (MainActivity.allItems.get(i).getRetailprice());
                     storeOfSum = (double) ((int) storeOfSum + (Math.round(Math.pow(10, 3) * (storeOfSum - (int) storeOfSum))) / (Math.pow(10, 3)));
 
-                    for (OrderedItem item: MainActivity.orderedItems){
+                    for (int j = 0; j<=MainActivity.orderedItems.size();j++){
 
-                        if(item.getItemID() == MainActivity.allItems.get(i).getItemID()){
+                        if(MainActivity.orderedItems.get(j).getItemID() == MainActivity.allItems.get(i).getItemID()){
 
-                            orderedItem = item;
+                            getItem = j;
                             break;
 
                         }
@@ -405,8 +406,7 @@ public class ItemSelect extends Fragment {
 
             }
 
-
-            MainActivity.orderedItems.remove(orderedItem);
+            MainActivity.orderedItems.remove(getItem);
 
             result = storeOfSum;
 

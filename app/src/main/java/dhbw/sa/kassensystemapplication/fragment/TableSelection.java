@@ -85,6 +85,9 @@ public class TableSelection extends Fragment {
         new GetAllOrders().execute();
         new GetAllUnproducedItems().execute();
 
+        //clear the PayOrder-Fragment-List
+        PayOrder.namesFromItems.clear();
+
         // Initialize the Nodes
         confirmTV = v.findViewById(R.id.confirmTV);
         spinnerTV = v.findViewById(R.id.spinnerTV);
