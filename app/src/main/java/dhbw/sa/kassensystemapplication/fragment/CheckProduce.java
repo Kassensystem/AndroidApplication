@@ -42,6 +42,7 @@ public class CheckProduce extends Fragment {
     public static String text = null;
     private Button confirmProduced;
     private int sizeOfRelativeLayout = 0;
+    private String comment;
 
     public CheckProduce() {
         // Required empty public constructor
@@ -85,7 +86,7 @@ public class CheckProduce extends Fragment {
                 }
 
                 // declaration of the TextView for the Items and the Buttons (+ and -)
-                final TextView tableTextView = new TextView(getActivity());
+                final TextView commentTextView = new TextView(getActivity());
                 final CheckBox checkProduce = new CheckBox(getActivity());
 
                 // Params for the TextView quantityTextField
@@ -96,13 +97,18 @@ public class CheckProduce extends Fragment {
                 checkProduce.setY(posY);
                 rl.addView(checkProduce);
 
-                tableTextView.setLayoutParams(new LinearLayout.LayoutParams(8 * pix, 10 * pix));
-                //tableTextView.setId(i);
-                tableTextView.setX(13 * pix);
-                tableTextView.setY(posY);
-                tableTextView.setText(tableOfOrderedItem.getName());
-                tableTextView.setPadding(pix, pix, pix, pix);
-                rl.addView(tableTextView);
+                if(orderedItem.getComment() == null){
+                    comment = "";
+                } else {
+                    comment = orderedItem.getComment();
+                }
+
+                commentTextView.setLayoutParams(new LinearLayout.LayoutParams(8 * pix, 10 * pix));
+                commentTextView.setX(13 * pix);
+                commentTextView.setY(posY);
+                commentTextView.setText(comment);
+                commentTextView.setPadding(pix, pix, pix, pix);
+                rl.addView(commentTextView);
 
                 posY = posY +5*pix;
 
