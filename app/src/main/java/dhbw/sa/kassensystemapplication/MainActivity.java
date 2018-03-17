@@ -20,10 +20,11 @@ import dhbw.sa.kassensystemapplication.entity.Item;
 import dhbw.sa.kassensystemapplication.entity.Order;
 import dhbw.sa.kassensystemapplication.entity.OrderedItem;
 import dhbw.sa.kassensystemapplication.entity.Table;
-import dhbw.sa.kassensystemapplication.fragment.CheckProduce;
+import dhbw.sa.kassensystemapplication.fragment.CheckProduceFragment;
 import dhbw.sa.kassensystemapplication.fragment.LoginFragment;
-import dhbw.sa.kassensystemapplication.fragment.TableSelection;
-import dhbw.sa.kassensystemapplication.fragment.adjustUrl;
+import dhbw.sa.kassensystemapplication.fragment.LoginPasswordChangeFragment;
+import dhbw.sa.kassensystemapplication.fragment.TableSelectionFragment;
+import dhbw.sa.kassensystemapplication.fragment.UrlAdjustorFragment;
 
 /**
  * Diese Klasse dient als Container (Hintergrund) für alle anderen Klassen.
@@ -116,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         // Declare the Fragment which will be shown by the start of the app
         setTitle("Bestellung aufgeben");
-        TableSelection fragment = new TableSelection();
+        TableSelectionFragment fragment = new TableSelectionFragment();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.frame,fragment,"fragment1");
         fragmentTransaction.commit();
@@ -164,16 +165,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // which item is chosen
         if (id == R.id.nav_URL) {
 
-            setTitle("URL Einstellen");
-            adjustUrl fragment = new adjustUrl();
+            setTitle("Verbindungsaufbau");
+            UrlAdjustorFragment fragment = new UrlAdjustorFragment();
             FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
             fragmentTransaction.replace(R.id.frame, fragment);
             fragmentTransaction.commit();
 
-        } else if (id == R.id.nav_Login){
+        } else if (id == R.id.nav_Login) {
 
             setTitle("Login");
             LoginFragment fragment = new LoginFragment();
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.replace(R.id.frame, fragment);
+            fragmentTransaction.commit();
+        } else if (id == R.id.nav_ChangeLogin){
+
+            setTitle("Login-Passwort bearbeiten");
+            LoginPasswordChangeFragment fragment = new LoginPasswordChangeFragment();
             FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
             fragmentTransaction.replace(R.id.frame,fragment);
             fragmentTransaction.commit();
@@ -181,19 +189,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else if (id == R.id.nav_CheckProduce){
 
             setTitle("Bestellungsannahme");
-            CheckProduce fragment = new CheckProduce();
+            CheckProduceFragment fragment = new CheckProduceFragment();
             FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
             fragmentTransaction.replace(R.id.frame,fragment);
             fragmentTransaction.commit();
 
         }else if (id == R.id.nav_CR) {
 
-            showToast("Marvin Mai\nDaniel Schifano");
+            showToast("   Marvin Mai\nDaniel Schifano");
 
         } else if (id == R.id.nav_Order){
 
             setTitle("Bestellung aufgeben");
-            TableSelection fragment = new TableSelection();
+            TableSelectionFragment fragment = new TableSelectionFragment();
             FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
             fragmentTransaction.replace(R.id.frame,fragment);
             fragmentTransaction.commit();
@@ -207,7 +215,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     /**
      * In dieser Methode werden die IP-Adresse und die URL geladen.
-     * Hierfür wird in der Klasse adjustUrl die IP-Adresse und die URL über den Lebenszyklus der Applikation gespeichert
+     * Hierfür wird in der Klasse UrlAdjustorFragment die IP-Adresse und die URL über den Lebenszyklus der Applikation gespeichert
      * @return true, wenn bereits ein URL gespeichert wurde. False wenn noch kein URL gespeichert wurde
      */
     public boolean loadSavedSettings(){
@@ -231,9 +239,3 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
 }
-
- /*
-  * TODO: Schauen ob mab das hinbekommt, eine Meldung zu geben ob der Server gerade geschlossen wurde
-  * TODO: SO wie der Moosi gemeint hat, die Anzahl der Artikel darstellen
-  * TODO: Schauen was für Tests es gibt, die ich machen kann.....vorallem mit den Meilensteinen
-  */

@@ -13,7 +13,6 @@ import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import org.joda.time.DateTime;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -21,10 +20,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
 
 import dhbw.sa.kassensystemapplication.Entity;
 import dhbw.sa.kassensystemapplication.MainActivity;
@@ -35,9 +31,6 @@ import dhbw.sa.kassensystemapplication.entity.OrderedItem;
 import dhbw.sa.kassensystemapplication.entity.Table;
 
 
-import static dhbw.sa.kassensystemapplication.MainActivity.url;
-
-
 /**
  * In dieser Klasse wird der Startbildschirm der Applikation erstellt.
  * Dieser wird ebenfalls aufgerufen, wenn angefangen wird eine Bestellung aufzugeben.
@@ -45,7 +38,7 @@ import static dhbw.sa.kassensystemapplication.MainActivity.url;
  */
 
 
-public class TableSelection extends Fragment {
+public class TableSelectionFragment extends Fragment {
 
     // Nodes
     private Button confirmTV;
@@ -58,7 +51,7 @@ public class TableSelection extends Fragment {
     // Variables
     private String tableName = null;
 
-    public TableSelection() {
+    public TableSelectionFragment() {
 
     }
 
@@ -85,8 +78,8 @@ public class TableSelection extends Fragment {
         new GetAllOrders().execute();
         new GetAllUnproducedItems().execute();
 
-        //clear the PayOrder-Fragment-List
-        PayOrder.namesFromItems.clear();
+        //clear the PayOrderFragment-Fragment-List
+        PayOrderFragment.namesFromItems.clear();
 
         // Initialize the Nodes
         confirmTV = v.findViewById(R.id.confirmTV);
@@ -131,7 +124,7 @@ public class TableSelection extends Fragment {
                         MainActivity.orderIsPaid = false;
                     }
 
-                    ItemSelect fragment = new ItemSelect();
+                    ItemSelectFragment fragment = new ItemSelectFragment();
                     FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
                     fragmentTransaction.replace(R.id.frame, fragment, "fragment1");
                     fragmentTransaction.commit();
@@ -182,6 +175,12 @@ public class TableSelection extends Fragment {
 
             } catch (HttpClientErrorException e){
                 text = e.getResponseBodyAsString();
+
+                if(text.indexOf("Login")!= -1){
+                    text = "Der Login ist Fehlgeschlagen.\nBitte melden Sie sich mit Ihren " +
+                            "Zugangsdaten an";
+                }
+
                 e.printStackTrace();
                  return null;
             } catch (ResourceAccessException e) {
@@ -282,6 +281,12 @@ public class TableSelection extends Fragment {
 
             } catch (HttpClientErrorException e){
                 text = e.getResponseBodyAsString();
+
+                if(text.indexOf("Login")!= -1){
+                    text = "Der Login ist Fehlgeschlagen.\nBitte melden Sie sich mit Ihren " +
+                            "Zugangsdaten an";
+                }
+
                 return null;
             } catch (ResourceAccessException e) {
                 text = "Es konnte keine Verbindung aufgebaut werden.";
@@ -339,6 +344,10 @@ public class TableSelection extends Fragment {
 
             } catch (HttpClientErrorException e){
                 text = e.getResponseBodyAsString();
+                if(text.indexOf("Login")!= -1){
+                    text = "Der Login ist Fehlgeschlagen.\nBitte melden Sie sich mit Ihren " +
+                            "Zugangsdaten an";
+                }
                 return null;
             } catch (ResourceAccessException e) {
                 text = "Es konnte keine Verbindung aufgebaut werden";
@@ -389,13 +398,16 @@ public class TableSelection extends Fragment {
 
                 Integer orderId = responseEntity.getBody();
                 MainActivity.selectedOrderID = orderId;
-                System.out.println("----------------------------------\n \n \n \n"+orderId);
 
 
             } catch (HttpClientErrorException e){
 
                 text = e.getResponseBodyAsString();
                 e.printStackTrace();
+                if(text.indexOf("Login")!= -1){
+                    text = "Der Login ist Fehlgeschlagen.\nBitte melden Sie sich mit Ihren " +
+                            "Zugangsdaten an";
+                }
                 return null;
             }catch (Exception e){
 
@@ -435,6 +447,10 @@ public class TableSelection extends Fragment {
 
             } catch (HttpClientErrorException e){
                 text = e.getResponseBodyAsString();
+                if(text.indexOf("Login")!= -1){
+                    text = "Der Login ist Fehlgeschlagen.\nBitte melden Sie sich mit Ihren " +
+                            "Zugangsdaten an";
+                }
                 return null;
             } catch (ResourceAccessException e) {
                 text = "Es konnte keine Verbindung aufgebaut werden.";
@@ -484,6 +500,10 @@ public class TableSelection extends Fragment {
 
             } catch (HttpClientErrorException e){
                 text = e.getResponseBodyAsString();
+                if(text.indexOf("Login")!= -1){
+                    text = "Der Login ist Fehlgeschlagen.\nBitte melden Sie sich mit Ihren " +
+                            "Zugangsdaten an";
+                }
                 return null;
             } catch (ResourceAccessException e) {
                 text = "Es konnte keine Verbindung aufgebaut werden.";
@@ -554,7 +574,7 @@ public class TableSelection extends Fragment {
      */
     private void showToast(String text){
         if(text != null) {
-            Toast.makeText(MainActivity.context, text, Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.context, text, Toast.LENGTH_SHORT).show();
             System.out.println(text);
         }
     }

@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -17,6 +16,7 @@ import android.widget.Toast;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import dhbw.sa.kassensystemapplication.Entity;
@@ -32,7 +32,7 @@ public class LoginFragment extends Fragment {
     private EditText loginPassword;
     private Button loginButton;
     private static String text = null;
-    private static Boolean response = false;
+    private static Boolean response;
 
     String password;
     String encryptedString;
@@ -47,6 +47,7 @@ public class LoginFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_login, container, false);
+        response = false;
 
         loginNameEditText = v.findViewById(R.id.loginName);
         loginPassword = v.findViewById(R.id.loginPassword);
@@ -75,7 +76,7 @@ public class LoginFragment extends Fragment {
                 editor.putString("passwordhash", encryptedString);
                 editor.apply();
 
-                new loginCheck().execute();
+                new LoginCheck().execute();
 
             }
         });
@@ -86,14 +87,14 @@ public class LoginFragment extends Fragment {
     private void showTableFragment(){
 
         getActivity().setTitle("Bestellung aufgeben");
-        TableSelection fragment = new TableSelection();
+        TableSelectionFragment fragment = new TableSelectionFragment();
         FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.frame, fragment);
         fragmentTransaction.commit();
 
     }
 
-    private class loginCheck extends AsyncTask<Void, Void, Void> {
+    private class LoginCheck extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... params) {
@@ -111,6 +112,10 @@ public class LoginFragment extends Fragment {
                 text = "Der Name oder das Passwort wurden falsch eingegeben.\n" +
                         "Bitte überprüfen Sie Ihre Logindaten.";
                 e.printStackTrace();
+
+            } catch (ResourceAccessException e) {
+                text = "Es konnte keine Verbindung aufgebaut werden.";
+                return null;
             }catch (Exception e){
                 text = "undefinierter Fehler";
                 e.printStackTrace();

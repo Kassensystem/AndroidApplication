@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,10 +32,12 @@ import dhbw.sa.kassensystemapplication.R;
 import dhbw.sa.kassensystemapplication.entity.Item;
 import dhbw.sa.kassensystemapplication.entity.OrderedItem;
 
+import static dhbw.sa.kassensystemapplication.MainActivity.widthPixels;
+
 /**
  * A simple {@link Fragment} subclass.
  */
-public class PayOrder extends Fragment {
+public class PayOrderFragment extends Fragment {
 
     //Nodes:
     private CheckBox payAll;
@@ -52,7 +55,7 @@ public class PayOrder extends Fragment {
 
     @SuppressLint("ValidFragment")
 
-    public PayOrder() {
+    public PayOrderFragment() {
     }
 
 
@@ -68,7 +71,8 @@ public class PayOrder extends Fragment {
         payOrderButton = v.findViewById(R.id.payOrderedItemsButton);
 
         // declare the universal pixels
-        final int pix = (int) TypedValue.applyDimension (TypedValue.COMPLEX_UNIT_DIP, 10, this.getResources().getDisplayMetrics());
+        final int pix = (int) TypedValue.applyDimension (TypedValue.COMPLEX_UNIT_DIP, 10,
+                this.getResources().getDisplayMetrics());
         float posY = pix;
 
         for(OrderedItem orderedItem: MainActivity.orderedItems){
@@ -93,11 +97,15 @@ public class PayOrder extends Fragment {
 
         priceToPay.setText(Double.toString(storeOfSum)+" €");
         priceToPay.setTextColor(Color.RED);
-        priceToPay.setTextSize(pix*2);
-
+        priceToPay.setTextSize((float)(pix*1.5));
 
         RelativeLayout relativeLayout = v.findViewById(R.id.rlPayOrder);
         ViewGroup.LayoutParams params = relativeLayout.getLayoutParams();
+
+        ScrollView scrollView = (ScrollView) v.findViewById(R.id.payAllScrollView);
+        ViewGroup.LayoutParams paramsScrollView = scrollView.getLayoutParams();
+        paramsScrollView.height = (MainActivity.heigthPixels)-(22*pix);
+
 
         /************************* Start der Forschleife für die Anzeige der Nodes***/
 
@@ -142,23 +150,23 @@ public class PayOrder extends Fragment {
                     // Params for the TextView txt
                     nameTextView.setLayoutParams(new LinearLayout.LayoutParams(30 * pix, 10 * pix));
                     nameTextView.setText(name);
-                    nameTextView.setX(pix / 10);
+                    nameTextView.setX(pix*2);
                     nameTextView.setY(posY);
                     nameTextView.setPadding(pix, pix, pix, pix);
                     relativeLayout.addView(nameTextView);
 
                     // Params for the TextView inventory
-                    inventoryTextView.setLayoutParams(new LinearLayout.LayoutParams(30 * pix, 10 * pix));
+                    inventoryTextView.setLayoutParams(new LinearLayout.LayoutParams(30*pix,10*pix));
                     inventoryTextView.setText(Integer.toString(sumOfItemIDsInOrder));
-                    inventoryTextView.setX(15 * pix);
+                    inventoryTextView.setX(widthPixels-15*pix-pix/2);
                     inventoryTextView.setY(posY);
-                    inventoryTextView.setPadding(pix, pix, pix, pix);
+                    inventoryTextView.setPadding(pix,pix,pix,pix);
                     relativeLayout.addView(inventoryTextView);
 
                     // Params for the TextView quantityTextField
                     quantityTextField.setLayoutParams(new LinearLayout.LayoutParams(8 * pix, 10 * pix));
                     quantityTextField.setText("0");
-                    quantityTextField.setX(18 * pix);
+                    quantityTextField.setX(pix/10);
                     quantityTextField.setY(posY);
                     quantityTextField.setPadding(pix, pix, pix, pix);
                     relativeLayout.addView(quantityTextField);
@@ -167,7 +175,7 @@ public class PayOrder extends Fragment {
                     // Params for the Button: +
                     plus.setLayoutParams(new LinearLayout.LayoutParams(4 * pix, 4 * pix));
                     plus.setText("+");
-                    plus.setX(21 * pix);
+                    plus.setX(widthPixels - 10*pix);
                     plus.setPadding(pix, pix, pix, pix);
                     plus.setY(posY);
                     relativeLayout.addView(plus);
@@ -175,7 +183,7 @@ public class PayOrder extends Fragment {
                     //Params for the Button: -
                     minus.setLayoutParams(new LinearLayout.LayoutParams(4 * pix, 4 * pix));
                     minus.setText("-");
-                    minus.setX(25 * pix);
+                    minus.setX(MainActivity.widthPixels-6*pix);
                     minus.setPadding(pix, pix, pix, pix);
                     minus.setY(posY);
                     relativeLayout.addView(minus);
@@ -202,7 +210,7 @@ public class PayOrder extends Fragment {
                                     numberOfInventory--;
 
                                     // Calculate the Sum
-                                    double result = UpdateSum(true,(String)nameTextView.getText());
+                                    double result = updateSum(true,(String)nameTextView.getText());
 
                                     // Set the updated quantity and inventory
                                     quantityTextField.setText(Integer.toString(selectedQuantity));
@@ -240,7 +248,7 @@ public class PayOrder extends Fragment {
                                     numberOfInventory++;
 
                                     // Update the sumTextView and set the TextView Sum
-                                    double result = UpdateSum(false, (String)nameTextView.getText());
+                                    double result = updateSum(false, (String)nameTextView.getText());
                                     priceToPay.setText(Double.toString(result) + " €");
 
                                     if(payAll.isChecked()){
@@ -329,7 +337,7 @@ public class PayOrder extends Fragment {
         return false;
     }
 
-    private double UpdateSum(boolean isAdd, String itemName){
+    private double updateSum(boolean isAdd, String itemName){
 
 
         for(Item item: MainActivity.allItems){
@@ -461,7 +469,7 @@ public class PayOrder extends Fragment {
     private void showToast(String text){
 
         if(text != null){
-            Toast.makeText(MainActivity.context, text, Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.context, text, Toast.LENGTH_SHORT).show();
             this.text = null;
         }
 
@@ -470,7 +478,7 @@ public class PayOrder extends Fragment {
 
     private void showTableFragment(){
 
-        TableSelection fragment = new TableSelection();
+        TableSelectionFragment fragment = new TableSelectionFragment();
         FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.frame, fragment);
         fragmentTransaction.commit();

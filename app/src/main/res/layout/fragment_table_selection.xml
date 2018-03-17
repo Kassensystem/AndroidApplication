@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="dhbw.sa.kassensystemapplication.fragment.TableSelection">
+    tools:context="dhbw.sa.kassensystemapplication.fragment.TableSelectionFragment">
 
 
     <Spinner
@@ -30,4 +30,14 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/spinnerTV" />
+
+    <TextView
+        android:id="@+id/textView8"
+        android:layout_width="191dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginStart="32dp"
+        android:text="Bitte wählen Sie einen Tisch:"
+        app:layout_constraintBottom_toTopOf="@+id/spinnerTV"
+        app:layout_constraintStart_toStartOf="@+id/spinnerTV" />
 </android.support.constraint.ConstraintLayout>

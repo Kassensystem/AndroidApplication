@@ -42,9 +42,6 @@ public class AnnotationFragment extends Fragment {
         // Required empty public constructor
     }
 
-
-
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -86,7 +83,7 @@ public class AnnotationFragment extends Fragment {
                     orderedComment = "";
                 }
 
-                itemName.setLayoutParams(new LinearLayout.LayoutParams(8 * pix, 10 * pix));
+                itemName.setLayoutParams(new LinearLayout.LayoutParams(9 * pix, 10 * pix));
                 itemName.setText("Artikel "+itemNr+":");
                 itemName.setX(pix/10);
                 itemName.setY(posY+(pix/10));
@@ -141,7 +138,7 @@ public class AnnotationFragment extends Fragment {
     private void showItemSelectFragment() {
 
         getActivity().setTitle("Bestellung aufgeben");
-        ItemSelect fragment = new ItemSelect();
+        ItemSelectFragment fragment = new ItemSelectFragment();
         FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.frame, fragment);
         fragmentTransaction.commit();

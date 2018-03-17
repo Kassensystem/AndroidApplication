@@ -6,18 +6,20 @@
         android:icon="@drawable/ic_add_shopping_cart_black_24dp"></item>
 
     <item android:id="@+id/nav_URL"
-        android:title="URL auswählen"
+        android:title="Verbindungsaufbau"
         android:icon="@drawable/ic_wifi_black_24dp"></item>
-
 
     <item android:id="@+id/nav_Login"
         android:title="Login"
         android:icon="@drawable/ic_person_black_24dp"></item>
 
+    <item android:id="@+id/nav_ChangeLogin"
+        android:title="Login-Passwort bearbeiten"
+        android:icon="@drawable/ic_group_black_24dp"></item>
+
     <item android:id="@+id/nav_CheckProduce"
         android:title="Bestellungsannahme"
         android:icon="@drawable/ic_swap_horiz_black_24dp"></item>
-
 
     <item android:id="@+id/nav_CR"
         android:title="Copy Right"

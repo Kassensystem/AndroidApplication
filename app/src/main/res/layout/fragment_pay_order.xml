@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="dhbw.sa.kassensystemapplication.fragment.PayOrder">
+    tools:context="dhbw.sa.kassensystemapplication.fragment.PayOrderFragment">
 
 
     <RelativeLayout
@@ -43,14 +43,16 @@
         <TextView
             android:id="@+id/priceToPay"
             android:layout_width="220dp"
-            android:layout_height="40dp"
+            android:layout_height="52dp"
             android:layout_alignParentBottom="true"
             android:layout_alignStart="@+id/payAllcheckBox"
-            android:layout_marginRight="50dp"
+            android:layout_alignTop="@+id/payOrderedItemsButton"
             android:layout_marginBottom="5dp"
+            android:layout_marginRight="50dp"
             android:text="priceToPay" />
 
         <ScrollView
+            android:id="@+id/payAllScrollView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_above="@+id/payAllcheckBox"

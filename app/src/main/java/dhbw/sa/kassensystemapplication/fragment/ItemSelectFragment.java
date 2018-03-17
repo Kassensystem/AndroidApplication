@@ -3,11 +3,8 @@ package dhbw.sa.kassensystemapplication.fragment;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.constraint.ConstraintLayout;
-import android.support.constraint.ConstraintSet;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,7 +17,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
-import org.joda.time.DateTime;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -37,11 +33,8 @@ import static dhbw.sa.kassensystemapplication.MainActivity.orderedItems;
 import dhbw.sa.kassensystemapplication.MainActivity;
 import dhbw.sa.kassensystemapplication.R;
 import dhbw.sa.kassensystemapplication.entity.Item;
-import dhbw.sa.kassensystemapplication.entity.Order;
-import dhbw.sa.kassensystemapplication.entity.Table;
 
 import static dhbw.sa.kassensystemapplication.MainActivity.allItems;
-import static dhbw.sa.kassensystemapplication.MainActivity.url;
 import static dhbw.sa.kassensystemapplication.MainActivity.widthPixels;
 
 /**
@@ -49,7 +42,7 @@ import static dhbw.sa.kassensystemapplication.MainActivity.widthPixels;
  * Ebenfalls werden in dieser Klasse die Buttons "Bezahlen" und "Bestellen" initialisiert. Durch diese wird die Kommunikation mit dem Server gestartet.
  * @author Daniel Schifano
  */
-public class ItemSelect extends Fragment {
+public class ItemSelectFragment extends Fragment {
 
     // Nodes from the layout
     private TextView sum;
@@ -75,7 +68,7 @@ public class ItemSelect extends Fragment {
     private boolean isOrderPaid;
 
     // Constructor
-    public ItemSelect() {
+    public ItemSelectFragment() {
 
     }
     /**
@@ -272,7 +265,7 @@ public class ItemSelect extends Fragment {
                                     itemName = itemName.substring(0,lengthOfStringTillSplit2)+itemName.substring(lengthOfStringTillSplit2+2);
                                 }
                             }
-                            double result = UpdateSum(true,itemName);
+                            double result = updateSum(true,itemName);
 
                             // Set the updated quantity and inventory
                             quantityTextField.setText(Integer.toString(selectedQuantity));
@@ -316,7 +309,7 @@ public class ItemSelect extends Fragment {
                                         itemName = itemName.substring(0, lengthOfStringTillSplit2) + itemName.substring(lengthOfStringTillSplit2 + 2);
                                     }
                                 }
-                                double result = UpdateSum(false, itemName);
+                                double result = updateSum(false, itemName);
                                 sum.setText(Double.toString(result) + " €");
                             }
 
@@ -354,8 +347,6 @@ public class ItemSelect extends Fragment {
         return v;
     }
 
-    //update the sumTextView in the Fragment
-
     /**
      * In dieser Methode wird der Gesamtpreis der Bestellung errechnet.
      *
@@ -363,7 +354,7 @@ public class ItemSelect extends Fragment {
      * @param itemName Welcher Artikel wurde hinzugefügt/abgezogen.
      * @return Den Gesamtpreis der Bestellung.
      */
-    private double UpdateSum(boolean isAdd, String itemName){
+    private double updateSum(boolean isAdd, String itemName){
 
 
         double result = 0;
@@ -494,7 +485,6 @@ public class ItemSelect extends Fragment {
 
     }
 
-
     private class GetOrderedItems extends AsyncTask<Void,Void,ArrayList<OrderedItem>> {
 
         @Override
@@ -545,11 +535,11 @@ public class ItemSelect extends Fragment {
 
     }
     /**
-     * Mithilfe dieser Methode wird die Klasse TableSelection aufgerufen und die Klasse ItemSelect wird nicht mehr dargestellt.
+     * Mithilfe dieser Methode wird die Klasse TableSelectionFragment aufgerufen und die Klasse ItemSelectFragment wird nicht mehr dargestellt.
      */
     private void showTableFragment(){
 
-        TableSelection fragment = new TableSelection();
+        TableSelectionFragment fragment = new TableSelectionFragment();
         FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.frame, fragment);
         fragmentTransaction.commit();
@@ -558,7 +548,7 @@ public class ItemSelect extends Fragment {
 
     private void showPayFragment(){
 
-        PayOrder fragment = new PayOrder();
+        PayOrderFragment fragment = new PayOrderFragment();
         FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.frame, fragment);
         fragmentTransaction.commit();
@@ -582,7 +572,7 @@ public class ItemSelect extends Fragment {
     private void showToast(String text){
 
         if(text != null){
-            Toast.makeText(MainActivity.context, text, Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.context, text, Toast.LENGTH_SHORT).show();
             this.text = null;
         }
 

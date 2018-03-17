@@ -1,47 +1,28 @@
 package dhbw.sa.kassensystemapplication.fragment;
 
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.TextView;
-
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestTemplate;
-
-import java.util.ArrayList;
 
 import dhbw.sa.kassensystemapplication.MainActivity;
 import dhbw.sa.kassensystemapplication.R;
-import dhbw.sa.kassensystemapplication.entity.Item;
-import dhbw.sa.kassensystemapplication.entity.Order;
-import dhbw.sa.kassensystemapplication.entity.Table;
 
 
-public class adjustUrl extends Fragment {
+public class UrlAdjustorFragment extends Fragment {
 
     private Button confirmURL;
     private EditText editTextURL;
     private TextView textView;
 
-    public adjustUrl() {
+    public UrlAdjustorFragment() {
 
     }
 
@@ -69,7 +50,7 @@ public class adjustUrl extends Fragment {
         //Set the loaded URL in the EditText View
         editTextURL.setText(MainActivity.ip);
 
-        //Save the ip and update the URL. (Open the TableSelection Fragment)
+        //Save the ip and update the URL. (Open the TableSelectionFragment Fragment)
         confirmURL.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -88,8 +69,8 @@ public class adjustUrl extends Fragment {
                 MainActivity.url = "http://"+ipToSafe+":8080/api";
                 System.out.println(ipToSafe);
 
-                //Set the Fragment: TableSelection
-                TableSelection fragment = new TableSelection();
+                //Set the Fragment: TableSelectionFragment
+                TableSelectionFragment fragment = new TableSelectionFragment();
                 FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
                 fragmentTransaction.replace(R.id.frame,fragment,"fragment1");
                 fragmentTransaction.commit();

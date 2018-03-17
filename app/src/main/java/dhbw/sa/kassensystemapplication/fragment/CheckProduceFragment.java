@@ -16,13 +16,11 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.ArrayList;
 
 import dhbw.sa.kassensystemapplication.Entity;
 import dhbw.sa.kassensystemapplication.MainActivity;
@@ -32,19 +30,17 @@ import dhbw.sa.kassensystemapplication.entity.Order;
 import dhbw.sa.kassensystemapplication.entity.OrderedItem;
 import dhbw.sa.kassensystemapplication.entity.Table;
 
-import static dhbw.sa.kassensystemapplication.MainActivity.url;
-
 /**
  * A simple {@link Fragment} subclass.
  */
-public class CheckProduce extends Fragment {
+public class CheckProduceFragment extends Fragment {
 
     public static String text = null;
     private Button confirmProduced;
     private int sizeOfRelativeLayout = 0;
     private String comment;
 
-    public CheckProduce() {
+    public CheckProduceFragment() {
         // Required empty public constructor
     }
 
@@ -98,7 +94,7 @@ public class CheckProduce extends Fragment {
                 rl.addView(checkProduce);
 
                 if(orderedItem.getComment() == null){
-                    comment = "";
+                    comment = "--";
                 } else {
                     comment = orderedItem.getComment();
                 }
@@ -196,6 +192,12 @@ public class CheckProduce extends Fragment {
                 text = e.getResponseBodyAsString();
                 e.printStackTrace();
                 return null;
+
+            } catch (ResourceAccessException e) {
+                text = "Es konnte keine Verbindung aufgebaut werden.\nDie Artikel konnten nicht " +
+                        "übertragen werden. Bitte verbinden Sie sich mit dem Netzwerk und " +
+                        "versuchen Sie es erneut";
+                return null;
             }catch (Exception e){
                 text = "undefinierter Fehler";
                 e.printStackTrace();
@@ -218,7 +220,7 @@ public class CheckProduce extends Fragment {
     private void showToast(String text){
 
         if(text != null){
-            Toast.makeText(MainActivity.context, text, Toast.LENGTH_LONG).show();
+            Toast.makeText(MainActivity.context, text, Toast.LENGTH_SHORT).show();
             this.text = null;
         }
 
@@ -228,7 +230,7 @@ public class CheckProduce extends Fragment {
     private void showTableFragment(){
 
         getActivity().setTitle("Bestellung aufgeben");
-        TableSelection fragment = new TableSelection();
+        TableSelectionFragment fragment = new TableSelectionFragment();
         FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.frame, fragment);
         fragmentTransaction.commit();
