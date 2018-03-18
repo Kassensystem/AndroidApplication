@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/AndroidApplication.iml" filepath="$PROJECT_DIR$/AndroidApplication.iml" />
+      <module fileurl="file://C:\Users\marvi\AndroidStudioProjects\Kassensystem_Application\AndroidApplication.iml" filepath="C:\Users\marvi\AndroidStudioProjects\Kassensystem_Application\AndroidApplication.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Kassensystem_Application.iml" filepath="$PROJECT_DIR$/Kassensystem_Application.iml" />
       <module fileurl="file://C:\Users\danis\Documents\GitHub\AndroidApplication\Kassensystem_Application.iml" filepath="C:\Users\danis\Documents\GitHub\AndroidApplication\Kassensystem_Application.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
