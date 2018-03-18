@@ -69,17 +69,20 @@ public class TableSelectionFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        MainActivity.allunproducedItems.clear();
+        MainActivity.orderedItems.clear();
+        PayOrderFragment.namesFromItems.clear();
+
         // Get the Layout and set it for use
         View v = inflater.inflate(R.layout.fragment_table_selection, container, false);
 
         // Get all the information form the Server. Also refresh the information every Order
-        new GetAllTables().execute();
         new GetAllItems().execute();
         new GetAllOrders().execute();
         new GetAllUnproducedItems().execute();
+        new GetAllTables().execute();
 
-        //clear the PayOrderFragment-Fragment-List
-        PayOrderFragment.namesFromItems.clear();
+
 
         // Initialize the Nodes
         confirmTV = v.findViewById(R.id.confirmTV);
@@ -122,14 +125,10 @@ public class TableSelectionFragment extends Fragment {
                         new CreatNewOrder().execute();
                     } else {
                         MainActivity.orderIsPaid = false;
+                        new GetOrderedItems().execute();
                     }
 
-                    ItemSelectFragment fragment = new ItemSelectFragment();
-                    FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-                    fragmentTransaction.replace(R.id.frame, fragment, "fragment1");
-                    fragmentTransaction.commit();
                 }  else {
-
 
                     showToast("Bitte wählen Sie einen Tisch aus");
 
@@ -421,7 +420,11 @@ public class TableSelectionFragment extends Fragment {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
-            showToast(text);
+            if (text == null){
+                showItemFragment();
+            } else {
+                showToast(text);
+            }
 
         }
     }
@@ -466,14 +469,17 @@ public class TableSelectionFragment extends Fragment {
         protected void onPostExecute( ArrayList<OrderedItem> orderedItems) {
             super.onPostExecute(orderedItems);
 
-            if(text != null){
-                showToast(text);
-                text = null;
-            }
-
             if (orderedItems != null) {
                 MainActivity.orderedItems = orderedItems;
             }
+
+            if(text != null){
+                showToast(text);
+                text = null;
+            } else {
+                showItemFragment();
+            }
+
 
         }
     }
@@ -553,7 +559,7 @@ public class TableSelectionFragment extends Fragment {
 
                         // save the orderItems
                         if (!o.isPaid() && t.getTableID() == o.getTable()) {
-                            new GetOrderedItems().execute();
+
                             MainActivity.selectedOrderID = o.getOrderID();
                             return false;
 
@@ -577,6 +583,13 @@ public class TableSelectionFragment extends Fragment {
             Toast.makeText(MainActivity.context, text, Toast.LENGTH_SHORT).show();
             System.out.println(text);
         }
+    }
+
+    private void showItemFragment(){
+        ItemSelectFragment fragment = new ItemSelectFragment();
+        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.frame, fragment, "fragment1");
+        fragmentTransaction.commit();
     }
 
 

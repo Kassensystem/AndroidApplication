@@ -299,7 +299,6 @@ public class PayOrderFragment extends Fragment {
                 }
 
                 new UpdateOrder().execute();
-                showTableFragment();
 
             }
         });
@@ -405,6 +404,7 @@ public class PayOrderFragment extends Fragment {
                 MainActivity.orderedItems.clear();
                 namesFromItems.clear();
                 storeOfSum = 0;
+                text = null;
 
             } catch (HttpClientErrorException e){
                 text = e.getResponseBodyAsString();
@@ -424,7 +424,11 @@ public class PayOrderFragment extends Fragment {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
-            showToast(text);
+            if (text == null){
+                showTableFragment();
+            } else {
+                showToast(text);
+            }
 
         }
 

@@ -69,62 +69,68 @@ public class CheckProduceFragment extends Fragment {
 
         for(final OrderedItem orderedItem: MainActivity.allunproducedItems) {
 
-            if (!orderedItem.isItemProduced()) {
+            try {
+                if (!orderedItem.isItemProduced()) {
 
-                String name = null;
+                    String name = null;
 
-                //get the name from the orderedItem
-                for (Item item: MainActivity.allItems){
-                    if (item.getItemID() == orderedItem.getItemID()){
-                        name = item.getName();
-                        break;
+                    //get the name from the orderedItem
+                    for (Item item: MainActivity.allItems){
+                        if (item.getItemID() == orderedItem.getItemID()){
+                            name = item.getName();
+                            break;
+                        }
                     }
-                }
 
-                // declaration of the TextView for the Items and the Buttons (+ and -)
-                final TextView commentTextView = new TextView(getActivity());
-                final CheckBox checkProduce = new CheckBox(getActivity());
+                    // declaration of the TextView for the Items and the Buttons (+ and -)
+                    final TextView commentTextView = new TextView(getActivity());
+                    final CheckBox checkProduce = new CheckBox(getActivity());
 
-                // Params for the TextView quantityTextField
-                Table tableOfOrderedItem = findTableToOrder(orderedItem.getOrderID());
+                    // Params for the TextView quantityTextField
+                    Table tableOfOrderedItem = findTableToOrder(orderedItem.getOrderID());
 
-                checkProduce.setText(name+"\n"+tableOfOrderedItem.getName());
-                checkProduce.setX(pix/10);
-                checkProduce.setY(posY);
-                rl.addView(checkProduce);
+                    checkProduce.setText(name+"\n"+tableOfOrderedItem.getName());
+                    checkProduce.setX(pix/10);
+                    checkProduce.setY(posY);
+                    rl.addView(checkProduce);
 
-                if(orderedItem.getComment() == null){
-                    comment = "--";
-                } else {
-                    comment = orderedItem.getComment();
-                }
+                    if(orderedItem.getComment() == null){
+                        comment = "--";
+                    } else {
+                        comment = orderedItem.getComment();
+                    }
 
-                commentTextView.setLayoutParams(new LinearLayout.LayoutParams(8 * pix, 10 * pix));
-                commentTextView.setX(13 * pix);
-                commentTextView.setY(posY);
-                commentTextView.setText(comment);
-                commentTextView.setPadding(pix, pix, pix, pix);
-                rl.addView(commentTextView);
+                    commentTextView.setLayoutParams(new LinearLayout.LayoutParams(8 * pix, 10 * pix));
+                    commentTextView.setX(13 * pix);
+                    commentTextView.setY(posY);
+                    commentTextView.setText(comment);
+                    commentTextView.setPadding(pix, pix, pix, pix);
+                    rl.addView(commentTextView);
 
-                posY = posY +5*pix;
+                    posY = posY +5*pix;
 
-                checkProduce.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
+                    checkProduce.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
 
-                        if (checkProduce.isChecked()){
+                            if (checkProduce.isChecked()){
 
-                            orderedItem.setItemIsProduced(true);
+                                orderedItem.setItemIsProduced(true);
 
-                        } else {
+                            } else {
 
-                            orderedItem.setItemIsProduced(false);
+                                orderedItem.setItemIsProduced(false);
+
+                            }
 
                         }
+                    });
 
-                    }
-                });
-
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                showToast("Ein oder mehrere Artikel können nicht richtig dargestellt werden.\n" +
+                        "Bitte Überprüfen Sie an der Manager-Applikation Ihre Bestellungen.");
             }
 
         }

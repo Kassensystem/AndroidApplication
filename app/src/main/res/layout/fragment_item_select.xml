@@ -44,7 +44,7 @@
         <TextView
             android:id="@+id/sumIV"
             android:layout_width="235dp"
-            android:layout_height="40dp"
+            android:layout_height="54dp"
             android:layout_alignBottom="@+id/paidBtn"
             android:layout_marginBottom="8dp"
             android:layout_marginTop="8dp"
