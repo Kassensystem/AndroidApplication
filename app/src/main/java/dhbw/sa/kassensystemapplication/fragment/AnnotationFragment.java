@@ -2,6 +2,7 @@ package dhbw.sa.kassensystemapplication.fragment;
 
 
 import android.annotation.SuppressLint;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -28,6 +29,7 @@ import dhbw.sa.kassensystemapplication.entity.OrderedItem;
 public class AnnotationFragment extends Fragment {
 
     private Button confirmButton;
+    private TextView priceOfItem;
 
     private Item item;
     private int sizeOfRelativeLayout = 0;
@@ -49,6 +51,12 @@ public class AnnotationFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_annotation, container, false);
 
         confirmButton = v.findViewById(R.id.confirmComment);
+        priceOfItem = v.findViewById(R.id.priceOfItem);
+
+        if(item != null){
+            priceOfItem.setText(String.valueOf((int) item.getRetailprice())+" €/pro Artikel");
+            priceOfItem.setTextColor(Color.RED);
+        }
 
         // declare the universal pixels
         final int pix = (int) TypedValue.applyDimension (TypedValue.COMPLEX_UNIT_DIP, 10,

@@ -19,9 +19,11 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -52,6 +54,7 @@ public class PayOrderFragment extends Fragment {
     public static String text = null;
     private double savePriceSeperat;
     private double savePriceFull;
+    private boolean isAllPaid;
 
     @SuppressLint("ValidFragment")
 
@@ -387,6 +390,34 @@ public class PayOrderFragment extends Fragment {
 
     }
 
+    private void showToast(String text){
+
+        if(text != null){
+            Toast.makeText(MainActivity.context, text, Toast.LENGTH_SHORT).show();
+            this.text = null;
+        }
+
+
+    }
+
+    private void showTableFragment(){
+
+        TableSelectionFragment fragment = new TableSelectionFragment();
+        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.frame, fragment);
+        fragmentTransaction.commit();
+
+    }
+
+    private void showItemSelectFragment(){
+
+        ItemSelectFragment fragment = new ItemSelectFragment();
+        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.frame, fragment);
+        fragmentTransaction.commit();
+
+    }
+
     private class UpdateOrder extends AsyncTask<Void, Void, Void> {
 
         @Override
@@ -400,8 +431,15 @@ public class PayOrderFragment extends Fragment {
                         (MainActivity.url + "/orderedItem", HttpMethod.PUT,
                                 Entity.getEntity(MainActivity.orderedItems),Integer.class );
 
-
-                MainActivity.orderedItems.clear();
+                for(OrderedItem item: MainActivity.orderedItems){
+                    if(!item.isItemPaid()){
+                        isAllPaid = false;
+                        break;
+                    } else {
+                        isAllPaid = true;
+                    }
+                }
+                
                 namesFromItems.clear();
                 storeOfSum = 0;
                 text = null;
@@ -425,7 +463,13 @@ public class PayOrderFragment extends Fragment {
             super.onPostExecute(aVoid);
 
             if (text == null){
-                showTableFragment();
+
+                if(!isAllPaid){
+                    showItemSelectFragment();
+                } else {
+                    showTableFragment();
+                }
+
             } else {
                 showToast(text);
             }
@@ -467,25 +511,6 @@ public class PayOrderFragment extends Fragment {
 
         }
 
-
-    }
-
-    private void showToast(String text){
-
-        if(text != null){
-            Toast.makeText(MainActivity.context, text, Toast.LENGTH_SHORT).show();
-            this.text = null;
-        }
-
-
-    }
-
-    private void showTableFragment(){
-
-        TableSelectionFragment fragment = new TableSelectionFragment();
-        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.frame, fragment);
-        fragmentTransaction.commit();
 
     }
 

@@ -1,6 +1,7 @@
 package dhbw.sa.kassensystemapplication.fragment;
 
 
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -37,6 +38,7 @@ public class CheckProduceFragment extends Fragment {
 
     public static String text = null;
     private Button confirmProduced;
+    private TextView failurIfNoUnproducedItem;
     private int sizeOfRelativeLayout = 0;
     private String comment;
 
@@ -51,6 +53,7 @@ public class CheckProduceFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_check_produce, container, false);
 
         confirmProduced = v.findViewById(R.id.confirmTheProduce);
+        failurIfNoUnproducedItem = v.findViewById(R.id.failurIfNoUnproducedItem);
 
         // declare the universal pixels
         final int pix = (int) TypedValue.applyDimension (TypedValue.COMPLEX_UNIT_DIP, 10, this.getResources().getDisplayMetrics());
@@ -140,10 +143,17 @@ public class CheckProduceFragment extends Fragment {
             public void onClick(View view) {
 
                 new UpdateOrder().execute();
-                showTableFragment();
 
             }
         });
+
+        if(MainActivity.allunproducedItems.size() == 0){
+            failurIfNoUnproducedItem.setTextColor(Color.RED);
+            failurIfNoUnproducedItem.setText("Es sind keine Artikel\nabholbereit.");
+        } else {
+            failurIfNoUnproducedItem.setText("");
+        }
+
                 return v;
     }
 
@@ -216,7 +226,11 @@ public class CheckProduceFragment extends Fragment {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
-            showToast(text);
+            if(text == null){
+                showTableFragment();
+            } else {
+                showToast(text);
+            }
 
         }
 
