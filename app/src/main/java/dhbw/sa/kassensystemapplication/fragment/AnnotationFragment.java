@@ -24,27 +24,54 @@ import dhbw.sa.kassensystemapplication.entity.Item;
 import dhbw.sa.kassensystemapplication.entity.OrderedItem;
 
 /**
- * A simple {@link Fragment} subclass.
+ * In dieser Klasse wird der Kommentare-Hinzufügen-Bildschirm der Applikation erstellt.
+ *
+ * @author Daniel Schifano
  */
 public class AnnotationFragment extends Fragment {
 
+    /**
+     * Nodes, in denen die Informationen für den Anwendern dargestellt werden, beziehungsweise die
+     * sie verwenden können.
+     */
     private Button confirmButton;
     private TextView priceOfItem;
-
+    /**
+     * Variablen, die zu "Berechnungen" innerhalb der Java-Klasse verwendet werden.
+     */
     private Item item;
     private int sizeOfRelativeLayout = 0;
     private String orderedComment;
     private boolean checked;
-
+    /**
+     * Der Konstruktor, der zum aufrufen dieser Klasse benötigt wird.
+     * Damit wird der neue Bildschirm initalisiert und kann auf dem Smartphone angezeigt werden.
+     * Dabei wird der Artikel übergeben, welches einen Kommentar erhalten soll.
+     *
+     * @param item Der Artikel, welchem ein oder mehrere Kommentare hinzugefügt werden sollen.
+     */
     @SuppressLint("ValidFragment")
     public AnnotationFragment(Item item){
         this.item = item;
     }
-
+    /**
+     * Der Konstruktor, der zum aufrufen dieser Klasse benötigt wird.
+     * Er benötigt keine Übergabe Parameter.
+     * Damit wird der neue Bildschirm initalisiert und kann auf dem Smartphone angezeigt werden.
+     */
     public AnnotationFragment() {
         // Required empty public constructor
     }
-
+    /**
+     * Diese Methode wird aufgerufen wenn das Fragment erstellt wird. Dabei werden alle Nodes
+     * initialisiert.
+     *
+     * @param inflater Instantiiert ein XML-Layout in ein passendes View Objekt
+     * @param container Erlaubt den Zugriff auf container Eigenschaften
+     * @param savedInstanceState Gibt an in welchem Abschnitt des Lebenszyklus die App sich befindet.
+     *                           Ob sie z.B. geschlossen wurde oder gestartet wurde.
+     * @return View die dargestellt werden soll
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -148,7 +175,10 @@ public class AnnotationFragment extends Fragment {
         return v;
 
     }
-
+    /**
+     * Mithilfe dieser Methode wird die Java-Klasse ItemSelectFragment aufgerufen und die
+     * Java-Klasse AnnotationFragment wird nicht mehr dargestellt.
+     */
     private void showItemSelectFragment() {
 
         getActivity().setTitle("Bestellung aufgeben");

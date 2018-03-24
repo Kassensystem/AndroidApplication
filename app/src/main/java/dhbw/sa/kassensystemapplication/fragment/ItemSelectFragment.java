@@ -44,12 +44,14 @@ import static dhbw.sa.kassensystemapplication.MainActivity.widthPixels;
  */
 public class ItemSelectFragment extends Fragment {
 
-    // Nodes from the layout
+    /**
+     * Nodes, in denen die Informationen für den Anwendern dargestellt werden, beziehungsweise die
+     * sie verwenden können.
+     */
     private TextView sum;
     private TextView tableNameTextView;
     private Button orderBtn;
     private Button paidBtn;
-
     /**
      * Speichert die Fehlermeldung des Servers.
      */
@@ -62,14 +64,18 @@ public class ItemSelectFragment extends Fragment {
      * Gibt an, wie lang der String maximal sein darf, bevor eine dritte Zeile angefangen werden muss.
      */
     private int lengthOfStringTillSplit2 = 2*lengthOfStringTillSplit1;
-
-    // variables
+    /**
+     * Variablen, die zu "Berechnungen" innerhalb der Java-Klasse verwendet werden.
+     */
     private double storeOfSum;
     private int sizeOfRelativeLayout;
     private boolean isOrderPaid;
     private boolean checked;
-
-    // Constructor
+    /**
+     * Der Konstruktor, der zum aufrufen dieser Klasse benötigt wird.
+     * Er benötigt keine Übergabe Parameter.
+     * Damit wird der neue Bildschirm initalisiert und kann auf dem Smartphone angezeigt werden.
+     */
     public ItemSelectFragment() {
 
     }
@@ -440,7 +446,6 @@ public class ItemSelectFragment extends Fragment {
      * Applikation upgedated wurde, an den Server weiterzuleiten.
      */
     private class UpdateOrder extends AsyncTask<Void, Void, Void> {
-
         /**
          * Mit dieser Methode wird eine bereits bestehende Bestellung die mithilfe der Applikation
          * upgedated wurde an den Server übermittelt.
@@ -476,7 +481,6 @@ public class ItemSelectFragment extends Fragment {
 
             return null;
         }
-
         /**
          * Falls bei der Übertragung der Bestellung zum Server ein Fehler auftritt, wird mithilfe der ShowToast-Methode dieser Fehler dargestellt.
          * @param aVoid wird hier nicht benötigt
@@ -498,11 +502,26 @@ public class ItemSelectFragment extends Fragment {
             }
 
         }
-
     }
-
+    /**
+     * Diese Klasse wird dafür verwendet, alle Bestellten Artikel - zu einem bestimmten Tisch -
+     * die derzeit in der Datenbank angelegt sind in die Applikation zu laden.
+     * Ebenfalls wird folgendens Überprüft:
+     *  - befinden sich "Bestellte Artikel" in der Datenbank
+     *  - besteht Kontakt zur Datenbank
+     *  - kommt es zu Verbindungsfehlern innerhalb des Netzwerks
+     */
     private class GetOrderedItems extends AsyncTask<Void,Void,ArrayList<OrderedItem>> {
-
+        /**
+         * Diese Methode wird dafür verwendet alle Bestellten Artikel - eines Tisches -
+         * der Datenbank zu erhalten.
+         * Die Bestellten Artikel werden in der MainActivity gepseichert.
+         *
+         * @param params welche Datentypen die Informationen haben, die im Hintergrund bearbeitet
+         *               werden sollen.
+         * @return null, alle Informationen die vom Server übermittelt wurden werden in der
+         *               MainActivity gespeichert.
+         */
         @Override
         protected ArrayList<OrderedItem> doInBackground(Void... params) {
 
@@ -533,7 +552,13 @@ public class ItemSelectFragment extends Fragment {
                 return null;
             }
         }
-
+        /**
+         * Falls bei der Kommunikation mit dem Server ein Fehler auftritt, wird mithilfe der
+         * ShowToast-Methode dieser Fehler dargestellt.
+         * Speichert die bestellten Artikel in der MainActivity.
+         *
+         * @param orderedItems alle Bestellten Artikel die in der Datenbank hinterlegt sind.
+         */
         protected void onPostExecute( ArrayList<OrderedItem> orderedItems) {
             super.onPostExecute(orderedItems);
 
@@ -562,7 +587,10 @@ public class ItemSelectFragment extends Fragment {
         fragmentTransaction.commit();
 
     }
-
+    /**
+     * Mithilfe dieser Methode wird die Java-Klasse PayOrderFragment aufgerufen und die
+     * Java-Klasse ItemSelectFragment wird nicht mehr dargestellt.
+     */
     private void showPayFragment(){
 
         PayOrderFragment fragment = new PayOrderFragment();
@@ -571,7 +599,10 @@ public class ItemSelectFragment extends Fragment {
         fragmentTransaction.commit();
 
     }
-
+    /**
+     * Mithilfe dieser Methode wird die Java-Klasse AnnotationFragment aufgerufen und die
+     * Java-Klasse ItemSelectFragment wird nicht mehr dargestellt.
+     */
     private void showAnnotationFragment(Item item) {
 
         getActivity().setTitle(item.getName());

@@ -2,7 +2,11 @@ package dhbw.sa.kassensystemapplication.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-
+/**
+ * Model für einen Datensatz der Datenbanktabelle orderedItem.
+ *
+ * @author Daniel Schifano
+ */
 public class OrderedItem {
     @JsonProperty private int orderedItemID;
     @JsonProperty private int orderID;

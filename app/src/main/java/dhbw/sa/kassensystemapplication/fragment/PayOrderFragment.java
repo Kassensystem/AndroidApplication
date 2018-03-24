@@ -37,7 +37,9 @@ import dhbw.sa.kassensystemapplication.entity.OrderedItem;
 import static dhbw.sa.kassensystemapplication.MainActivity.widthPixels;
 
 /**
- * A simple {@link Fragment} subclass.
+ * In dieser Klasse wird der Bezahlen-Bildschirm der Applikation erstellt.
+ *
+ * @author Daniel Schifano
  */
 public class PayOrderFragment extends Fragment {
 
@@ -60,9 +62,6 @@ public class PayOrderFragment extends Fragment {
     private double savePriceFull;
     private boolean isAllPaid;
     private boolean checked;
-
-    //Damit kann man ein Fragment-Konstruktor erzeugen, welcher einen Übergabe-Wert besitzt.
-    @SuppressLint("ValidFragment")
     /**
      * Der Konstruktor, der zum aufrufen dieser Klasse benötigt wird.
      * Er benötigt keine Übergabe Parameter.

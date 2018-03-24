@@ -5,7 +5,8 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Collections;
 
 /**
- * Created by danis on 15.03.2018.
+ * Wird in der App nicht verwendet.
+ * Dient zu Verständnis zwecken.
  */
 /*
 @Configuration

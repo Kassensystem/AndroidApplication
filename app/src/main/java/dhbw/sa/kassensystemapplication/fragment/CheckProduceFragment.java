@@ -32,13 +32,22 @@ import dhbw.sa.kassensystemapplication.entity.OrderedItem;
 import dhbw.sa.kassensystemapplication.entity.Table;
 
 /**
- * A simple {@link Fragment} subclass.
+ * In dieser Klasse wird der Bestellungsannahme-Bildschirm der Applikation erstellt.
+ *
+ * @author Daniel Schifano
  */
 public class CheckProduceFragment extends Fragment {
 
-    public static String text = null;
+    /**
+     * Nodes, in denen die Informationen für den Anwendern dargestellt werden, beziehungsweise die
+     * sie verwenden können.
+     */
     private Button confirmProduced;
     private TextView failurIfNoUnproducedItem;
+    /**
+     * Variablen, die zu "Berechnungen" innerhalb der Java-Klasse verwendet werden.
+     */
+    public static String text = null;
     private int sizeOfRelativeLayout = 0;
     private String comment;
     boolean checked;
@@ -50,12 +59,26 @@ public class CheckProduceFragment extends Fragment {
      * Gibt an, wie lang der String maximal sein darf, bevor eine dritte Zeile angefangen werden muss.
      */
     private int lengthOfStringTillSplit2 = 2*lengthOfStringTillSplit1;
-
+    /**
+     * Der Konstruktor, der zum aufrufen dieser Klasse benötigt wird.
+     * Er benötigt keine Übergabe Parameter.
+     * Damit wird der neue Bildschirm initalisiert und kann auf dem Smartphone angezeigt werden.
+     */
     public CheckProduceFragment() {
         // Required empty public constructor
     }
-
-
+    /**
+     * Diese Methode wird aufgerufen wenn das Fragment erstellt wird. Dabei werden alle Nodes
+     * initialisiert.
+     * Wenn Artikel als "angenommen" markiert sind, dann werden Sie an den Server geschickt und in
+     * der Datenbank gespeichert.
+     *
+     * @param inflater Instantiiert ein XML-Layout in ein passendes View Objekt
+     * @param container Erlaubt den Zugriff auf container Eigenschaften
+     * @param savedInstanceState Gibt an in welchem Abschnitt des Lebenszyklus die App sich befindet.
+     *                          Ob sie z.B. geschlossen wurde oder gestartet wurde.
+     * @return View die dargestellt werden soll
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -173,7 +196,16 @@ public class CheckProduceFragment extends Fragment {
 
         return v;
     }
-
+    /**
+     * Mit dieser Methode wird der Tisch zu einer Bestellung herausgesucht.
+     * Diese Methode wird immer dann aufgerufen, wenn ein Artikel auf dem Bildschirm dargestellt
+     * werden soll. Der Tischname befindet sich immer in Klammern hinter dem Artikelname.
+     *
+     * @param orderID Die Bestellung, von der der Tisch gesucht wird.
+     * @return Table, wenn ein Tisch zu der orderID gefunden wurde.
+     *         null, wenn kein Tisch zu der orderID gefunden wurde. Dies ist vorallem dann der Fall,
+     *         wenn in der Datenbank die orderID nicht mehr vorhanden ist.
+     */
     private Table findTableToOrder(int orderID) {
 
         System.out.println("----------\nOrder-ID: " + orderID);
@@ -206,9 +238,45 @@ public class CheckProduceFragment extends Fragment {
         System.out.println("\tnix gefunden");
         return null;
     }
+    /**
+     * Methode, die den übergebenen Text auf dem Smartphone darstellt.
+     * @param text Der Text welcher dargestellt werden soll.
+     */
+    private void showToast(String text){
 
+        if(text != null){
+            Toast.makeText(MainActivity.context, text, Toast.LENGTH_SHORT).show();
+            this.text = null;
+        }
+
+
+    }
+    /**
+     * Mithilfe dieser Methode wird die Java-Klasse TableSelectionFragment aufgerufen und die
+     * Java-Klasse CheckProduceFragment wird nicht mehr dargestellt.
+     */
+    private void showTableFragment(){
+
+        getActivity().setTitle("Bestellung aufgeben");
+        TableSelectionFragment fragment = new TableSelectionFragment();
+        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.frame, fragment);
+        fragmentTransaction.commit();
+
+    }
+    /**
+     * Diese Klasse wird dafür verwendet, eine bereits bestehende Bestellung, die mithilfe der
+     * Applikation upgedated wurde, an den Server weiterzuleiten.
+     */
     private class UpdateOrder extends AsyncTask<Void, Void, Void> {
-
+        /**
+         * Mit dieser Methode wird eine bereits bestehende Bestellung die mithilfe der Applikation
+         * upgedated wurde an den Server übermittelt.
+         *
+         * @param params welche Datentypen die Informationen haben, die im Hintergrund bearbeitet
+         *               werden sollen.
+         * @return gibt null zurück, da Informationen lediglich an den Server geschickt werden.
+         */
         @Override
         protected Void doInBackground(Void... params) {
 
@@ -239,7 +307,11 @@ public class CheckProduceFragment extends Fragment {
 
             return null;
         }
-
+        /**
+         * Falls bei der Übertragung der Bestellung zum Server ein Fehler auftritt, wird mithilfe
+         * der ShowToast-Methode dieser Fehler dargestellt.
+         * @param aVoid wird hier nicht benötigt
+         */
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
@@ -251,28 +323,5 @@ public class CheckProduceFragment extends Fragment {
             }
 
         }
-
-
     }
-
-    private void showToast(String text){
-
-        if(text != null){
-            Toast.makeText(MainActivity.context, text, Toast.LENGTH_SHORT).show();
-            this.text = null;
-        }
-
-
-    }
-
-    private void showTableFragment(){
-
-        getActivity().setTitle("Bestellung aufgeben");
-        TableSelectionFragment fragment = new TableSelectionFragment();
-        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.frame, fragment);
-        fragmentTransaction.commit();
-
-    }
-
 }

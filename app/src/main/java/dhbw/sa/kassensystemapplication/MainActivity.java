@@ -32,9 +32,8 @@ import dhbw.sa.kassensystemapplication.fragment.UrlAdjustorFragment;
  * Diese Klasse dient als Container (Hintergrund) für alle anderen Klassen.
  * Zusätzlich werden in dieser Klasse alle Informationen die von der Datenbank empfangen werden, gespeichert.
  * @author Daniel Schifano
- * @version 1.0
+ * @version 1.1
  */
-
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
     //information which will/are communicate/d with the Server
@@ -61,7 +60,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public static String loginPasswordHash;
     public static boolean checked;
 
-
     // The variables to get the connection with the server
     /**
      * Speichert die IP-Adresse des Servers.
@@ -75,14 +73,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
      * Der Hintergrund für alle weiteren Klassen wird hier gespeichert
      */
     public static Context context;
-
-    // variables
+    /**
+     * Variablen, die zu "Berechnungen" innerhalb der Java-Klasse verwendet werden.
+     */
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle toggle;
     public static int widthPixels = 0;
     public static int heigthPixels = 0;
-
-
     /**
      * Diese Methode wird aufgerufen wenn die App gestartet wird. Dabei wird das Layout(Hintergrund) für alle weiteren Klassen initialisiert.
      * @param savedInstanceState Gibt an in welchem Abschnitt des Lebenszyklus die App sich befindet. Ob sie z.B. geschlossen wurde oder gestartet wurde.
@@ -127,7 +124,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         fragmentTransaction.commit();
 
     }
-
     /**
      * Methode, die den übergebenen Text auf dem Smartphone darstellt.
      * @param handoverText Der Text welcher dargestellt werden soll.
@@ -137,7 +133,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Toast.makeText(this, handoverText, Toast.LENGTH_LONG).show();
 
     }
-
     /**
      * Mithilfe dieser Methode wird der Button initialisiert.
      *
@@ -153,8 +148,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         return super.onOptionsItemSelected(item);
     }
-
-
     /**
      * Mit dieser Funktion werden die verschiedenen Klassen (Fragments) die im Navigation-Drawer auswählbar sind aufgerufen.
      * @param item Das item das in dem Navigation-Drawer ausgewählt/angeklickt wurde
@@ -219,7 +212,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
-
     /**
      * In dieser Methode werden die IP-Adresse und die URL geladen.
      * Hierfür wird in der Klasse UrlAdjustorFragment die IP-Adresse und die URL über den Lebenszyklus der Applikation gespeichert
@@ -244,7 +236,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             return true;
         }
     }
-
+    /**
+     * Mit dieser Methode wird das Verhalten der Anwendung beschrieben, wenn auf dem Smartphone
+     * die Rückgängig Taste gedrückt wird.
+     * Wenn diese Taste gedrückt wird, wird automatisch der Startbildschirm der Anwendung
+     * (Bestellung-aufgeben-Bildschirm) dargestellt.
+     */
     @Override
     public void onBackPressed(){
 

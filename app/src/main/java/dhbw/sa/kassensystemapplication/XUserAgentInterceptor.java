@@ -9,7 +9,8 @@ import org.springframework.http.client.ClientHttpResponse;
 import java.io.IOException;
 
 /**
- * Created by danis on 15.03.2018.
+ * Wird in der App nicht verwendet.
+ * Dient zu Verständnis zwecken.
  */
 
 public class XUserAgentInterceptor implements ClientHttpRequestInterceptor {
