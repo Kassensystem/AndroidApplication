@@ -3,6 +3,8 @@ package dhbw.sa.kassensystemapplication;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.hardware.camera2.CaptureRequest;
+import android.inputmethodservice.Keyboard;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
@@ -49,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
      */
     public static ArrayList<Order> allOrders = new ArrayList<>();
 
+    public static ArrayList<OrderedItem> startOrderedItems  = new ArrayList<>();
     public static ArrayList<OrderedItem> orderedItems = new ArrayList<>();
     public static ArrayList<OrderedItem> allunproducedItems = new ArrayList();
     public static Table selectedTable;
@@ -56,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public static boolean orderIsPaid;
     public static String loginName;
     public static String loginPasswordHash;
-    public static String loginPassword;
+    public static boolean checked;
 
 
     // The variables to get the connection with the server
@@ -92,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         context = this.getApplicationContext();
+        checked = false;
 
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
@@ -188,11 +192,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         } else if (id == R.id.nav_CheckProduce){
 
-            setTitle("Bestellungsannahme");
-            CheckProduceFragment fragment = new CheckProduceFragment();
-            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-            fragmentTransaction.replace(R.id.frame,fragment);
-            fragmentTransaction.commit();
+
+            if (allunproducedItems.get(0).getItemID() != -1) {
+                setTitle("Bestellungsannahme");
+                CheckProduceFragment fragment = new CheckProduceFragment();
+                FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+                fragmentTransaction.replace(R.id.frame,fragment);
+                fragmentTransaction.commit();
+            }
 
         }else if (id == R.id.nav_CR) {
 
@@ -235,6 +242,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else {
             url = "http://" + ip + ":8080/api";
             return true;
+        }
+    }
+
+    @Override
+    public void onBackPressed(){
+
+        if(!checked){
+            setTitle("Bestellung aufgeben");
+            TableSelectionFragment fragment = new TableSelectionFragment();
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.replace(R.id.frame,fragment);
+            fragmentTransaction.commit();
+            checked = true;
         }
     }
 

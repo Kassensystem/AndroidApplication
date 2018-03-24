@@ -46,6 +46,7 @@ public class ItemSelectFragment extends Fragment {
 
     // Nodes from the layout
     private TextView sum;
+    private TextView tableNameTextView;
     private Button orderBtn;
     private Button paidBtn;
 
@@ -66,6 +67,7 @@ public class ItemSelectFragment extends Fragment {
     private double storeOfSum;
     private int sizeOfRelativeLayout;
     private boolean isOrderPaid;
+    private boolean checked;
 
     // Constructor
     public ItemSelectFragment() {
@@ -87,11 +89,15 @@ public class ItemSelectFragment extends Fragment {
         // declare the View of the Fragment
         View v = inflater.inflate(R.layout.fragment_item_select, container, false);
 
+        checked = false;
+
         // initialize the Nodes from the layout
+        tableNameTextView = v.findViewById(R.id.tableNameTextView);
         orderBtn = v.findViewById(R.id.orderBtn);
         paidBtn = v.findViewById(R.id.paidBtn);
         sum = v.findViewById(R.id.sumIV);
         sum.setText("0.0 €");
+        tableNameTextView.setText("Tisch "+MainActivity.selectedTable.getName());
 
         // declare the universal pixels
         final int pix = (int) TypedValue.applyDimension (TypedValue.COMPLEX_UNIT_DIP, 10,
@@ -122,8 +128,6 @@ public class ItemSelectFragment extends Fragment {
         // Change the Color of the TextView Sum
         sum.setTextColor(Color.RED);
         sum.setTextSize((float) (pix*1.5));
-
-
 
         // initialise the Nodes: TextView and the Buttons
         for(int i = 0; i< MainActivity.allItems.size(); i++){
@@ -192,13 +196,12 @@ public class ItemSelectFragment extends Fragment {
                 // To start the update-Order with already chosen items
                 int startUpdate = 0;
 
-                for (OrderedItem orderedItem: orderedItems){
+                for (OrderedItem orderedItem: MainActivity.orderedItems){
 
                     if(orderedItem.getItemID() == MainActivity.allItems.get(i).getItemID()){
 
                         int number = Integer.parseInt((String)quantityTextField.getText());
                         number++;
-                        startUpdate++;
 
                         int numberOfInventory = Integer.parseInt((String)inventoryTextView.getText());
                         numberOfInventory--;
@@ -212,6 +215,15 @@ public class ItemSelectFragment extends Fragment {
 
                     }
 
+                }
+                for (OrderedItem item: MainActivity.startOrderedItems){
+
+                    if(item.getItemID() == MainActivity.allItems.get(i).getItemID()){
+                        startUpdate++;
+                        int numberOfInventory1 = Integer.parseInt((String)inventoryTextView.getText());
+                        numberOfInventory1++;
+                        inventoryTextView.setText(Integer.toString(numberOfInventory1));
+                    }
                 }
 
                 // Set the Parameter for the Buttons plus and minus
@@ -328,25 +340,28 @@ public class ItemSelectFragment extends Fragment {
         orderBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                isOrderPaid = false;
-                new UpdateOrder().execute();
-
-
+                if (!checked) {
+                    isOrderPaid = false;
+                    new UpdateOrder().execute();
+                    checked = true;
+                }
             }
         });
 
         paidBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                isOrderPaid = true;
-                new UpdateOrder().execute();
 
+                if (!checked) {
+                    isOrderPaid = true;
+                    new UpdateOrder().execute();
+                    checked = true;
+                }
             }
         });
 
         return v;
     }
-
     /**
      * In dieser Methode wird der Gesamtpreis der Bestellung errechnet.
      *
@@ -420,17 +435,18 @@ public class ItemSelectFragment extends Fragment {
         return result;
 
     }
-
     /**
-     * Diese Klasse wird dafür verwendet, eine bereits bestehende Bestellung, die mithilfe der Applikation upgedated wurde, an den Server weiterzuleiten.
+     * Diese Klasse wird dafür verwendet, eine bereits bestehende Bestellung, die mithilfe der
+     * Applikation upgedated wurde, an den Server weiterzuleiten.
      */
-
     private class UpdateOrder extends AsyncTask<Void, Void, Void> {
 
         /**
-         * Mit dieser Methode wird eine bereits bestehende Bestellung die mithilfe der Applikation upgedated wurde an den Server übermittelt.
+         * Mit dieser Methode wird eine bereits bestehende Bestellung die mithilfe der Applikation
+         * upgedated wurde an den Server übermittelt.
          *
-         * @param params welche Datentypen die Informationen haben, die im Hintergrund bearbeitet werden sollen.
+         * @param params welche Datentypen die Informationen haben, die im Hintergrund bearbeitet
+         *               werden sollen.
          * @return gibt null zurück, da Informationen lediglich an den Server geschickt werden.
          */
         @Override
@@ -469,16 +485,16 @@ public class ItemSelectFragment extends Fragment {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
-            showToast(text);
 
             if(text == null){
-
                 if (isOrderPaid) {
                     new GetOrderedItems().execute();
                 } else {
                     showTableFragment();
                 }
-
+            } else {
+                showToast(text);
+                checked = false;
             }
 
         }
@@ -535,7 +551,8 @@ public class ItemSelectFragment extends Fragment {
 
     }
     /**
-     * Mithilfe dieser Methode wird die Klasse TableSelectionFragment aufgerufen und die Klasse ItemSelectFragment wird nicht mehr dargestellt.
+     * Mithilfe dieser Methode wird die Java-Klasse TableSelectionFragment aufgerufen und die
+     * Java-Klasse ItemSelectFragment wird nicht mehr dargestellt.
      */
     private void showTableFragment(){
 
@@ -564,7 +581,6 @@ public class ItemSelectFragment extends Fragment {
         fragmentTransaction.commit();
 
     }
-
     /**
      * Methode, die den übergebenen Text auf dem Smartphone darstellt.
      * @param text Der Text welcher dargestellt werden soll.

@@ -25,12 +25,14 @@ public class OrderedItem {
                        @JsonProperty("orderID") int orderID,
                        @JsonProperty("itemID") int itemID,
                        @JsonProperty("itemPaid") boolean itemPaid,
-                       @JsonProperty("itemProduced") boolean itemProduced) {
+                       @JsonProperty("itemProduced") boolean itemProduced,
+                       @JsonProperty("comment") String comment) {
         this.orderedItemID = orderedItemID;
         this.orderID = orderID;
         this.itemID = itemID;
         this.itemPaid = itemPaid;
         this.itemProduced = itemProduced;
+        this.comment = comment;
     }
 
     /**
@@ -86,4 +88,5 @@ public class OrderedItem {
     public String getComment() {
         return comment;
     }
+
 }

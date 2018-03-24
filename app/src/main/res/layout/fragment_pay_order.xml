@@ -43,12 +43,12 @@
         <TextView
             android:id="@+id/priceToPay"
             android:layout_width="220dp"
-            android:layout_height="52dp"
+            android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_alignStart="@+id/payAllcheckBox"
             android:layout_alignTop="@+id/payOrderedItemsButton"
             android:layout_marginBottom="5dp"
-            android:layout_marginRight="50dp"
+            android:layout_marginStart="10dp"
             android:text="priceToPay" />
 
         <ScrollView

@@ -41,6 +41,15 @@ public class CheckProduceFragment extends Fragment {
     private TextView failurIfNoUnproducedItem;
     private int sizeOfRelativeLayout = 0;
     private String comment;
+    boolean checked;
+    /**
+     * Gibt an, wie lang der String maximal sein darf, bevor eine neue Zeile angefangen werden muss.
+     */
+    private int lengthOfStringTillSplit1 = 17;
+    /**
+     * Gibt an, wie lang der String maximal sein darf, bevor eine dritte Zeile angefangen werden muss.
+     */
+    private int lengthOfStringTillSplit2 = 2*lengthOfStringTillSplit1;
 
     public CheckProduceFragment() {
         // Required empty public constructor
@@ -58,103 +67,111 @@ public class CheckProduceFragment extends Fragment {
         // declare the universal pixels
         final int pix = (int) TypedValue.applyDimension (TypedValue.COMPLEX_UNIT_DIP, 10, this.getResources().getDisplayMetrics());
         float posY = pix;
+        checked = false;
 
         // declare the relative Layout. There the Nodes for the Order get added.
         RelativeLayout rl = (RelativeLayout) v.findViewById(R.id.rlCheckProduce);
         ViewGroup.LayoutParams params = rl.getLayoutParams();
 
-        for(OrderedItem orderedItem: MainActivity.allunproducedItems){
+            for(OrderedItem orderedItem: MainActivity.allunproducedItems){
 
-            sizeOfRelativeLayout++;
-        }
+                sizeOfRelativeLayout++;
+            }
 
-        params.height = sizeOfRelativeLayout*5*pix;
+            params.height = sizeOfRelativeLayout*5*pix;
 
-        for(final OrderedItem orderedItem: MainActivity.allunproducedItems) {
+            for(final OrderedItem orderedItem: MainActivity.allunproducedItems) {
 
-            try {
-                if (!orderedItem.isItemProduced()) {
+                try {
+                    if (!orderedItem.isItemProduced()) {
 
-                    String name = null;
+                        String name = null;
 
-                    //get the name from the orderedItem
-                    for (Item item: MainActivity.allItems){
-                        if (item.getItemID() == orderedItem.getItemID()){
-                            name = item.getName();
-                            break;
+                        //get the name from the orderedItem
+                        for (Item item: MainActivity.allItems){
+                            if (item.getItemID() == orderedItem.getItemID()){
+                                name = item.getName();
+                                break;
+                            }
                         }
-                    }
+                        if(name.length() > lengthOfStringTillSplit1){
+                            name = name.substring(0,lengthOfStringTillSplit1) + "-\n" + name.substring(lengthOfStringTillSplit1);
+                            if (name.length() > lengthOfStringTillSplit2){
+                                name = name.substring(0,lengthOfStringTillSplit1) + "-\n" + name.substring(lengthOfStringTillSplit1,lengthOfStringTillSplit2) +"-\n" + name.substring(lengthOfStringTillSplit1);
+                            }
+                        }
 
-                    // declaration of the TextView for the Items and the Buttons (+ and -)
-                    final TextView commentTextView = new TextView(getActivity());
-                    final CheckBox checkProduce = new CheckBox(getActivity());
+                        // declaration of the TextView for the Items and the Buttons (+ and -)
+                        final TextView commentTextView = new TextView(getActivity());
+                        final CheckBox checkProduce = new CheckBox(getActivity());
 
-                    // Params for the TextView quantityTextField
-                    Table tableOfOrderedItem = findTableToOrder(orderedItem.getOrderID());
+                        // Params for the TextView quantityTextField
+                        Table tableOfOrderedItem = findTableToOrder(orderedItem.getOrderID());
 
-                    checkProduce.setText(name+"\n"+tableOfOrderedItem.getName());
-                    checkProduce.setX(pix/10);
-                    checkProduce.setY(posY);
-                    rl.addView(checkProduce);
+                        checkProduce.setText(name+" ("+tableOfOrderedItem.getName()+")");
+                        checkProduce.setX(pix/10);
+                        checkProduce.setY(posY);
+                        rl.addView(checkProduce);
 
-                    if(orderedItem.getComment() == null){
-                        comment = "--";
-                    } else {
-                        comment = orderedItem.getComment();
-                    }
+                        if(orderedItem.getComment() == null){
+                            comment = "--";
+                        } else {
+                            comment = orderedItem.getComment();
+                        }
 
-                    commentTextView.setLayoutParams(new LinearLayout.LayoutParams(8 * pix, 10 * pix));
-                    commentTextView.setX(13 * pix);
-                    commentTextView.setY(posY);
-                    commentTextView.setText(comment);
-                    commentTextView.setPadding(pix, pix, pix, pix);
-                    rl.addView(commentTextView);
 
-                    posY = posY +5*pix;
+                        commentTextView.setLayoutParams(new LinearLayout.LayoutParams(15 * pix, 10 * pix));
+                        commentTextView.setX((float) (14.5 * pix));
+                        commentTextView.setY(posY-(pix/2));
+                        commentTextView.setText(comment);
+                        commentTextView.setPadding(pix, pix, pix, pix);
+                        rl.addView(commentTextView);
 
-                    checkProduce.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
+                        posY = posY +5*pix;
 
-                            if (checkProduce.isChecked()){
+                        checkProduce.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
 
-                                orderedItem.setItemIsProduced(true);
+                                if (checkProduce.isChecked()){
 
-                            } else {
+                                    orderedItem.setItemIsProduced(true);
 
-                                orderedItem.setItemIsProduced(false);
+                                } else {
+
+                                    orderedItem.setItemIsProduced(false);
+
+                                }
 
                             }
+                        });
 
-                        }
-                    });
-
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-                showToast("Ein oder mehrere Artikel können nicht richtig dargestellt werden.\n" +
-                        "Bitte Überprüfen Sie an der Manager-Applikation Ihre Bestellungen.");
-            }
-
-        }
-
-        confirmProduced.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                new UpdateOrder().execute();
 
             }
-        });
 
-        if(MainActivity.allunproducedItems.size() == 0){
-            failurIfNoUnproducedItem.setTextColor(Color.RED);
-            failurIfNoUnproducedItem.setText("Es sind keine Artikel\nabholbereit.");
-        } else {
-            failurIfNoUnproducedItem.setText("");
-        }
+            confirmProduced.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
 
-                return v;
+                    if(!checked){
+                        new UpdateOrder().execute();
+                        checked = true;
+                    }
+                }
+            });
+
+            if(MainActivity.allunproducedItems.size() == 0){
+                failurIfNoUnproducedItem.setTextColor(Color.RED);
+                failurIfNoUnproducedItem.setText("Es sind keine Artikel\nabholbereit.");
+            } else {
+                failurIfNoUnproducedItem.setText("");
+            }
+
+        return v;
     }
 
     private Table findTableToOrder(int orderID) {
@@ -207,6 +224,7 @@ public class CheckProduceFragment extends Fragment {
             } catch (HttpClientErrorException e){
                 text = e.getResponseBodyAsString();
                 e.printStackTrace();
+                System.out.println("\n"+text+"\n--------------------------");
                 return null;
 
             } catch (ResourceAccessException e) {

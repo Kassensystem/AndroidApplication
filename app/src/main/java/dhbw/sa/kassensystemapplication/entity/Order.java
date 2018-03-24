@@ -10,7 +10,7 @@ import java.util.ArrayList;
 /**
  * Model für einen Datensatz der Datenbanktabelle orders.
  *
- * @author Marvin Mai
+ * @author Daniel Schifano
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Order {

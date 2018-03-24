@@ -34,6 +34,7 @@ public class AnnotationFragment extends Fragment {
     private Item item;
     private int sizeOfRelativeLayout = 0;
     private String orderedComment;
+    private boolean checked;
 
     @SuppressLint("ValidFragment")
     public AnnotationFragment(Item item){
@@ -49,6 +50,8 @@ public class AnnotationFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.fragment_annotation, container, false);
+
+        checked = false;
 
         confirmButton = v.findViewById(R.id.confirmComment);
         priceOfItem = v.findViewById(R.id.priceOfItem);
@@ -135,7 +138,10 @@ public class AnnotationFragment extends Fragment {
         confirmButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showItemSelectFragment();
+                if(!checked){
+                    showItemSelectFragment();
+                    checked = true;
+                }
             }
         });
 

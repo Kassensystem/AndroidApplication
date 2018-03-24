@@ -5,7 +5,7 @@ package dhbw.sa.kassensystemapplication.entity;
 /**
  * Model für einen Datensatz der Datenbanktabelle items.
  *
- * @author Marvin Mai
+ * @author Daniel Schifano
  */
 public class Item {
     private int itemID;

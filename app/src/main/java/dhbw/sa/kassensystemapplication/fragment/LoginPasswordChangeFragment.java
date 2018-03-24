@@ -1,6 +1,7 @@
 package dhbw.sa.kassensystemapplication.fragment;
 
 
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -27,32 +28,57 @@ import dhbw.sa.kassensystemapplication.MainActivity;
 import dhbw.sa.kassensystemapplication.R;
 
 /**
- * A simple {@link Fragment} subclass.
+ * In dieser Klasse wird der Login-Passwort-ändern-Bildschirm der Applikation erstellt.
+ *
+ * @author Daniel Schifano
  */
 public class LoginPasswordChangeFragment extends Fragment {
 
+    /**
+     * Nodes, in denen die Informationen für den Anwendern dargestellt werden, beziehungsweise die
+     * sie verwenden können.
+     */
     private Button confirmPasswordChange;
     private EditText loginName;
     private EditText oldPassword;
     private EditText newPassword;
     private EditText repeatNewPassword;
     private TextView wrongPasswort;
-
+    /**
+     * Variablen, die zu "Berechnungen" innerhalb der Java-Klasse verwendet werden.
+     */
     private String getNewpassword;
     private String sendNewPassword;
     private boolean agreedNewPassword = false;
     private Boolean response = false;
     private static String text = null;
-
+    private boolean checked;
+    /**
+     * Der Konstruktor, der zum aufrufen dieser Klasse benötigt wird.
+     * Er benötigt keine Übergabe Parameter.
+     * Damit wird der neue Bildschirm initalisiert und kann auf dem Smartphone angezeigt werden.
+     */
     public LoginPasswordChangeFragment() {
         // Required empty public constructor
     }
-
+    /**
+     * Diese Methode wird aufgerufen wenn das Fragment erstellt wird. Dabei werden alle Nodes
+     * initialisiert.
+     * Nach erfolgreichem ändern des Passworts wird das Passwort in der MainActivity gespeichert.
+     * So muss es nicht bei jedem Start der App neu eingegeben werden.
+     *
+     * @param inflater Instantiiert ein XML-Layout in ein passendes View Objekt
+     * @param container Erlaubt den Zugriff auf container Eigenschaften
+     * @param savedInstanceState Gibt an in welchem Abschnitt des Lebenszyklus die App sich befindet.
+     *                          Ob sie z.B. geschlossen wurde oder gestartet wurde.
+     * @return View die dargestellt werden soll
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         //Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_login_password_change, container, false);
+        checked = false;
 
         confirmPasswordChange = v.findViewById(R.id.confirmPasswordChange);
         loginName = v.findViewById(R.id.loginNamePasswordChange);
@@ -94,20 +120,22 @@ public class LoginPasswordChangeFragment extends Fragment {
             @Override
             public void onClick(View view) {
 
-                if(agreedNewPassword){
+                if (!checked) {
+                    if(agreedNewPassword){
 
-                    MainActivity.loginName = loginName.getText().toString();
-                    MainActivity.loginPasswordHash = String.valueOf(oldPassword.getText().toString().hashCode());
-                    sendNewPassword = newPassword.getText().toString();
+                        MainActivity.loginName = loginName.getText().toString();
+                        MainActivity.loginPasswordHash = String.valueOf(oldPassword.getText().toString().hashCode());
+                        sendNewPassword = String.valueOf(newPassword.getText().toString().hashCode());
 
-                    oldPassword.setText("");
-                    newPassword.setText("");
-                    repeatNewPassword.setText("");
+                        oldPassword.setText("");
+                        newPassword.setText("");
+                        repeatNewPassword.setText("");
 
-                    new ChangeLoginPassword().execute();
+                        new ChangeLoginPassword().execute();
 
-                }else {
-                    showToast("Überprüfen Sie Ihre Eingabe.");
+                    }else {
+                        showToast("Überprüfen Sie Ihre Eingabe.");
+                    }
                 }
 
             }
@@ -128,7 +156,10 @@ public class LoginPasswordChangeFragment extends Fragment {
 
 
     }
-
+    /**
+     * Mithilfe dieser Methode wird die Java-Klasse TableSelectionFragment aufgerufen und die
+     * Java-Klasse LoginPasswordChangeFragment wird nicht mehr dargestellt.
+     */
     private void showTableFragment(){
 
         getActivity().setTitle("Bestellung aufgeben");
@@ -138,9 +169,19 @@ public class LoginPasswordChangeFragment extends Fragment {
         fragmentTransaction.commit();
 
     }
-
+    /**
+     * Diese Klasse wird dafür verwendet, das Passwort zu ändern. Dabei wird mit
+     * dem Schlüsselwort "changeLoginPasswort" der Server kontaktiert. Dabei wird das neue Passwort
+     * übergeben.
+     */
     private class ChangeLoginPassword extends AsyncTask<Void, Void, Void> {
-
+        /**
+         * Mit dieser Methode wird das Passwort an den Server/Datenbank übertragen.
+         *
+         * @param params welche Datentypen die Informationen haben, die im Hintergrund bearbeitet
+         *               werden sollen.
+         * @return gibt null zurück, da Informationen lediglich an den Server geschickt werden.
+         */
         @Override
         protected Void doInBackground(Void... params) {
 
@@ -149,7 +190,7 @@ public class LoginPasswordChangeFragment extends Fragment {
             try {
                 response = false;
                 ResponseEntity<Boolean> responseEntity = restTemplate.exchange
-                        (MainActivity.url + "/changeLoginPassword", HttpMethod.GET,
+                        (MainActivity.url + "/changeLoginPassword", HttpMethod.PUT,
                                 Entity.getEntity(sendNewPassword),Boolean.class);
                 text = null;
                 response = responseEntity.getBody();
@@ -167,13 +208,22 @@ public class LoginPasswordChangeFragment extends Fragment {
             }
             return null;
         }
-
+        /**
+         * Falls bei der Übertragung zum Server ein Fehler auftritt, wird mithilfe
+         * der ShowToast-Methode dieser Fehler dargestellt.
+         * @param aVoid wird hier nicht benötigt
+         */
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
             if (response){
                 showTableFragment();
+                MainActivity.loginPasswordHash = sendNewPassword;
+                SharedPreferences shared = getActivity().getPreferences(0);
+                SharedPreferences.Editor editor = shared.edit();
+                editor.putString("passwordhash", sendNewPassword);
+                editor.apply();
             } else {
                 showToast(text);
             }

@@ -41,13 +41,17 @@ import static dhbw.sa.kassensystemapplication.MainActivity.widthPixels;
  */
 public class PayOrderFragment extends Fragment {
 
-    //Nodes:
+    /**
+     * Nodes, in denen die Informationen für den Anwendern dargestellt werden, beziehungsweise die
+     * sie verwenden können.
+     */
     private CheckBox payAll;
     private CheckBox printerService;
     private TextView priceToPay;
     private Button payOrderButton;
-
-    //variables
+    /**
+     * Variablen, die zu "Berechnungen" innerhalb der Java-Klasse verwendet werden.
+     */
     private int sizeOfRelativeLayout = 0;
     public static ArrayList<String> namesFromItems = new ArrayList<>();
     public static double storeOfSum = 0;
@@ -55,18 +59,33 @@ public class PayOrderFragment extends Fragment {
     private double savePriceSeperat;
     private double savePriceFull;
     private boolean isAllPaid;
+    private boolean checked;
 
+    //Damit kann man ein Fragment-Konstruktor erzeugen, welcher einen Übergabe-Wert besitzt.
     @SuppressLint("ValidFragment")
-
+    /**
+     * Der Konstruktor, der zum aufrufen dieser Klasse benötigt wird.
+     * Er benötigt keine Übergabe Parameter.
+     * Damit wird der neue Bildschirm initalisiert und kann auf dem Smartphone angezeigt werden.
+     */
     public PayOrderFragment() {
     }
-
-
+    /**
+     * Diese Methode wird aufgerufen wenn das Fragment erstellt wird.
+     * Für den Prozess "Bestellung aufgeben" wird hier der letzte Bildschirm initialisiert.
+     *
+     * @param inflater Instantiiert ein XML-Layout in ein passendes View Objekt
+     * @param container Erlaubt den Zugriff auf container Eigenschaften
+     * @param savedInstanceState Gibt an in welchem Abschnitt des Lebenszyklus die App sich befindet.
+     *                          Ob sie z.B. geschlossen wurde oder gestartet wurde.
+     * @return View die dargestellt werden soll
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_pay_order, container, false);
+        checked = false;
 
         payAll = v.findViewById(R.id.payAllcheckBox);
         printerService = v.findViewById(R.id.printerServicecheckBox);
@@ -100,7 +119,7 @@ public class PayOrderFragment extends Fragment {
 
         priceToPay.setText(Double.toString(storeOfSum)+" €");
         priceToPay.setTextColor(Color.RED);
-        priceToPay.setTextSize((float)(pix*1.5));
+        priceToPay.setTextSize((float)(pix*1.2));
 
         RelativeLayout relativeLayout = v.findViewById(R.id.rlPayOrder);
         ViewGroup.LayoutParams params = relativeLayout.getLayoutParams();
@@ -287,21 +306,22 @@ public class PayOrderFragment extends Fragment {
             @Override
             public void onClick(View view) {
 
-                if (!payAll.isChecked()) {
+                if (!checked) {
+                    if (!payAll.isChecked()) {
 
-                    for (OrderedItem item: MainActivity.orderedItems){
+                        for (OrderedItem item: MainActivity.orderedItems){
 
-                        item.setItemIsPaid(true);
+                            item.setItemIsPaid(true);
 
+                        }
                     }
 
+                    if(printerService.isChecked()){
+                        new PrintSalesCheck().execute();
+                    }
+                    new UpdateOrder().execute();
+                    checked = true;
                 }
-
-                if(printerService.isChecked()){
-                    new PrintSalesCheck().execute();
-                }
-
-                new UpdateOrder().execute();
 
             }
         });
@@ -327,7 +347,22 @@ public class PayOrderFragment extends Fragment {
 
         return v;
     }
-
+    /**
+     * Diese Methode dient zur Abfrage ob ein Artikel aus der Datenbank bereits auf dem Bildschirm
+     * dargestellt wird.
+     * Dazu wird der Artikelname (als String) übergeben. Anschließend wird die ArrayList
+     * "namesFromItems" durchlaufen und überprüft ob der Übergebene String sich in der Liste
+     * befindet.
+     * Die Methode gibt "true" zurück, wenn sich der Name in der Liste befindet. Ansonsten wird
+     * "false" zurückgegeben.
+     *
+     * Die Funktion wird verwendet, damit jeder Artikel nur einmal auf dem Bildschirm dargestellt
+     * wird.
+     *
+     * @param selectedName Der Artikelname, der überprüft werden soll.
+     * @return true, wenn der Artikelname in der Liste ist.
+     *         false, wenn der Artikelname nicht in der List ist.
+     */
     private static boolean isItemAlreadySelected(String selectedName){
 
         for(String name: namesFromItems){
@@ -338,7 +373,21 @@ public class PayOrderFragment extends Fragment {
 
         return false;
     }
-
+    /**
+     * Mit dieser Methode wird zum einen der Gesamtpreis einer Bestellung berechnet. Zum anderen
+     * werden die neu-Bestellten Artikel in der ArrayList OrderedItems (der MainActivity)
+     * gespeichert beziehungsweise wieder davon entfernt.
+     * Diese Liste wird nach Abschluss des Prozesses "Bestellung aufgeben" an die Datenbank
+     * (und somit die Küche) weitergeleitet.
+     *
+     * Diese Methode wird bei jedem betätigen eines Plus- oder Minus-Buttons aufgerufen.
+     *
+     * @param isAdd Boolean, ob der gewählte Artikel zu der ArrayList hinzugefügt werden soll, oder
+     *              ob dieser entfernt werden soll.
+     * @param itemName String, gibt den Artikelname an. Anhand dem Namen wird ein Artikel
+     *                 hinzugefügt oder gelöscht.
+     * @return Double, den Gesamtpreis einer Bestellung.
+     */
     private double updateSum(boolean isAdd, String itemName){
 
 
@@ -389,7 +438,10 @@ public class PayOrderFragment extends Fragment {
         return storeOfSum;
 
     }
-
+    /**
+     * Methode, die den übergebenen Text auf dem Smartphone darstellt.
+     * @param text Der Text welcher dargestellt werden soll.
+     */
     private void showToast(String text){
 
         if(text != null){
@@ -399,7 +451,10 @@ public class PayOrderFragment extends Fragment {
 
 
     }
-
+    /**
+     * Mithilfe dieser Methode wird die Java-Klasse TableSelectionFragment aufgerufen und die
+     * Java-Klasse PayOrderFragment wird nicht mehr dargestellt.
+     */
     private void showTableFragment(){
 
         TableSelectionFragment fragment = new TableSelectionFragment();
@@ -408,7 +463,10 @@ public class PayOrderFragment extends Fragment {
         fragmentTransaction.commit();
 
     }
-
+    /**
+     * Mithilfe dieser Methode wird die Java-Klasse ItemSelectFragment aufgerufen und die
+     * Java-Klasse PayOrderFragment wird nicht mehr dargestellt.
+     */
     private void showItemSelectFragment(){
 
         ItemSelectFragment fragment = new ItemSelectFragment();
@@ -417,9 +475,19 @@ public class PayOrderFragment extends Fragment {
         fragmentTransaction.commit();
 
     }
-
+    /**
+     * Diese Klasse wird dafür verwendet, eine bereits bestehende Bestellung, die mithilfe der
+     * Applikation upgedated wurde, an den Server weiterzuleiten.
+     */
     private class UpdateOrder extends AsyncTask<Void, Void, Void> {
-
+        /**
+         * Mit dieser Methode wird eine bereits bestehende Bestellung die mithilfe der Applikation
+         * upgedated wurde an den Server übermittelt.
+         *
+         * @param params welche Datentypen die Informationen haben, die im Hintergrund bearbeitet
+         *               werden sollen.
+         * @return gibt null zurück, da Informationen lediglich an den Server geschickt werden.
+         */
         @Override
         protected Void doInBackground(Void... params) {
 
@@ -439,7 +507,7 @@ public class PayOrderFragment extends Fragment {
                         isAllPaid = true;
                     }
                 }
-                
+
                 namesFromItems.clear();
                 storeOfSum = 0;
                 text = null;
@@ -447,6 +515,7 @@ public class PayOrderFragment extends Fragment {
             } catch (HttpClientErrorException e){
                 text = e.getResponseBodyAsString();
                 e.printStackTrace();
+                System.out.println("\n"+text+"\n--------------------------");
                 namesFromItems.clear();
                 return null;
             }catch (Exception e){
@@ -457,7 +526,11 @@ public class PayOrderFragment extends Fragment {
 
             return null;
         }
-
+        /**
+         * Falls bei der Übertragung der Bestellung zum Server ein Fehler auftritt, wird mithilfe
+         * der ShowToast-Methode dieser Fehler dargestellt.
+         * @param aVoid wird hier nicht benötigt
+         */
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
@@ -476,11 +549,20 @@ public class PayOrderFragment extends Fragment {
 
         }
 
-
     }
-
+    /**
+     * Diese Klasse wird dafür verwendet, einen Kundenbeleg als Rechnung anzufordern. Dabei wird mit
+     * dem Schlüsselwort "printOrder" der Server kontaktiert. Daraufhin wird der Kundenbeleg
+     * ausgedruckt.
+     */
     private class PrintSalesCheck extends AsyncTask<Void, Void, Void> {
-
+        /**
+         * Mit dieser Methode wird der Kundenbeleg angefordert.
+         *
+         * @param params welche Datentypen die Informationen haben, die im Hintergrund bearbeitet
+         *               werden sollen.
+         * @return gibt null zurück, da Informationen lediglich an den Server geschickt werden.
+         */
         @Override
         protected Void doInBackground(Void... params) {
 
@@ -502,7 +584,11 @@ public class PayOrderFragment extends Fragment {
 
             return null;
         }
-
+        /**
+         * Falls bei der Übertragung zum Server ein Fehler auftritt, wird mithilfe
+         * der ShowToast-Methode dieser Fehler dargestellt.
+         * @param aVoid wird hier nicht benötigt
+         */
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);

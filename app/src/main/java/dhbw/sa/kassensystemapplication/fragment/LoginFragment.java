@@ -2,10 +2,13 @@ package dhbw.sa.kassensystemapplication.fragment;
 
 
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +36,7 @@ public class LoginFragment extends Fragment {
     private Button loginButton;
     private static String text = null;
     private static Boolean response;
+    private boolean checked;
 
     String password;
     String encryptedString;
@@ -48,6 +52,7 @@ public class LoginFragment extends Fragment {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_login, container, false);
         response = false;
+        checked = false;
 
         loginNameEditText = v.findViewById(R.id.loginName);
         loginPassword = v.findViewById(R.id.loginPassword);
@@ -56,27 +61,65 @@ public class LoginFragment extends Fragment {
         loginNameEditText.setText(MainActivity.loginName);
         loginPassword.setText(MainActivity.loginPasswordHash);
 
+        loginPassword.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                checked = false;
+            }
+        });
+
+        loginNameEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                checked = false;
+            }
+        });
+
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                password = loginPassword.getText().toString();
-                if(!MainActivity.loginPasswordHash.equals(password)) {
-                    encryptedString = String.valueOf(password.hashCode());
-                } else {
-                    encryptedString = password;
+
+                if (!checked) {
+                    password = loginPassword.getText().toString();
+                    if(!MainActivity.loginPasswordHash.equals(password)) {
+                        encryptedString = String.valueOf(password.hashCode());
+                    } else {
+                        encryptedString = password;
+                    }
+
+                    MainActivity.loginPasswordHash = encryptedString;
+                    MainActivity.loginName = loginNameEditText.getText().toString();
+
+                    SharedPreferences shared = getActivity().getPreferences(0);
+                    SharedPreferences.Editor editor = shared.edit();
+                    editor.putString("loginname",loginNameEditText.getText().toString());
+                    editor.putString("passwordhash", encryptedString);
+                    editor.apply();
+
+                    new LoginCheck().execute();
+                    checked = true;
                 }
-
-                MainActivity.loginPasswordHash = encryptedString;
-                MainActivity.loginName = loginNameEditText.getText().toString();
-
-                SharedPreferences shared = getActivity().getPreferences(0);
-                SharedPreferences.Editor editor = shared.edit();
-                editor.putString("loginname",loginNameEditText.getText().toString());
-                editor.putString("passwordhash", encryptedString);
-                editor.apply();
-
-                new LoginCheck().execute();
 
             }
         });

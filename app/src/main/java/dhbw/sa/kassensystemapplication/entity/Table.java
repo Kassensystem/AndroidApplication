@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 /**
  * Model für einen Datensatz der Datenbanktabelle tables.
  *
- * @author Marvin Mai
+ * @author Daniel Schifano
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Table {

@@ -29,49 +29,58 @@ import dhbw.sa.kassensystemapplication.entity.Item;
 import dhbw.sa.kassensystemapplication.entity.Order;
 import dhbw.sa.kassensystemapplication.entity.OrderedItem;
 import dhbw.sa.kassensystemapplication.entity.Table;
-
-
 /**
  * In dieser Klasse wird der Startbildschirm der Applikation erstellt.
  * Dieser wird ebenfalls aufgerufen, wenn angefangen wird eine Bestellung aufzugeben.
  * @author Daniel Schifano
  */
-
-
 public class TableSelectionFragment extends Fragment {
 
-    // Nodes
+    /**
+     * Nodes, in denen die Informationen für den Anwendern dargestellt werden, beziehungsweise die
+     * sie verwenden können.
+     */
     private Button confirmTV;
     private Spinner spinnerTV;
     /**
      * Speichert die Fehlermeldung des Servers.
      */
     public String text;
-
-    // Variables
+    /**
+     * Variablen, die zu "Berechnungen" innerhalb der Java-Klasse verwendet werden.
+     */
     private String tableName = null;
-
+    private boolean checked;
+    /**
+     * Der Konstruktor, der zum aufrufen dieser Klasse benötigt wird.
+     * Er benötigt keine Übergabe Parameter.
+     * Damit wird der neue Bildschirm initalisiert und kann auf dem Smartphone angezeigt werden.
+     */
     public TableSelectionFragment() {
 
     }
-
     /**
-     *
-     * Diese Methode wird aufgerufen wenn das Fragment erstellt wird. Dabei wird der Befehl gegeben, dass alle Artikel, Tische und Bestellungen vom Server angefordert.
-     * Für "Bestellung aufgeben" wird hier der Startbildschirm initialisiert.
+     * Diese Methode wird aufgerufen wenn das Fragment erstellt wird. Dabei wird der Befehl gegeben,
+     * dass alle Artikel, Tische und Bestellungen vom Server angefordert werden sollen.
+     * Für den Prozess "Bestellung aufgeben" wird hier der Startbildschirm initialisiert.
      *
      * @param inflater Instantiiert ein XML-Layout in ein passendes View Objekt
      * @param container Erlaubt den Zugriff auf container Eigenschaften
-     * @param savedInstanceState Gibt an in welchem Abschnitt des Lebenszyklus die App sich befindet. Ob sie z.B. geschlossen wurde oder gestartet wurde.
+     * @param savedInstanceState Gibt an in welchem Abschnitt des Lebenszyklus die App sich befindet.
+     *                          Ob sie z.B. geschlossen wurde oder gestartet wurde.
      * @return View die dargestellt werden soll
      */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        MainActivity.startOrderedItems.clear();
         MainActivity.allunproducedItems.clear();
         MainActivity.orderedItems.clear();
+        MainActivity.allunproducedItems.clear();
+        MainActivity.allunproducedItems.add(new OrderedItem(-1,-1));
         PayOrderFragment.namesFromItems.clear();
+        checked = false;
 
         // Get the Layout and set it for use
         View v = inflater.inflate(R.layout.fragment_table_selection, container, false);
@@ -114,24 +123,27 @@ public class TableSelectionFragment extends Fragment {
             public void onClick(View view) {
 
                 // Set the next Fragment
-                if (tableName == null) {
+                if (!checked) {
+                    if (tableName == null) {
 
-                    showToast("Bitte überprüfen Sie die IP-Adresse. Es kann keine Verbindung hergestellt werden");
+                        showToast("Bitte überprüfen Sie die IP-Adresse. Es kann keine Verbindung hergestellt werden");
 
-                } else if (tableName != "") {
+                    } else if (tableName != "") {
 
-                    if(isOrderPaidAtTheSelectedTable(tableName)){
-                        MainActivity.orderIsPaid = true;
-                        new CreatNewOrder().execute();
-                    } else {
-                        MainActivity.orderIsPaid = false;
-                        new GetOrderedItems().execute();
+                        if(isOrderPaidAtTheSelectedTable(tableName)){
+                            MainActivity.orderIsPaid = true;
+                            new CreatNewOrder().execute();
+                        } else {
+                            MainActivity.orderIsPaid = false;
+                            new GetOrderedItems().execute();
+                        }
+
+                    }  else {
+
+                        showToast("Bitte wählen Sie einen Tisch aus");
+
                     }
-
-                }  else {
-
-                    showToast("Bitte wählen Sie einen Tisch aus");
-
+                    checked = true;
                 }
 
             }
@@ -141,8 +153,12 @@ public class TableSelectionFragment extends Fragment {
 
     }
     /**
-     * private
-     * Diese Klasse wird dafür verwendet, alle Tische die derzeit in der Datenbank als verfügbar angelegt sind in die Applikation zu laden.
+     * Diese Klasse wird dafür verwendet, alle Tische die derzeit in der Datenbank als verfügbar
+     * angelegt sind in die Applikation zu laden.
+     * Ebenfalls wird folgendens Überprüft:
+     *  - befinden sich "Tische" in der Datenbank
+     *  - besteht Kontakt zur Datenbank
+     *  - kommt es zu Verbindungsfehlern innerhalb des Netzwerks
      */
     private class GetAllTables extends AsyncTask<Void,Void,ArrayList<Table>> {
 
@@ -246,12 +262,19 @@ public class TableSelectionFragment extends Fragment {
 
                 ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_dropdown_item, textOfSpinner);
                 spinnerTV.setAdapter(spinnerAdapter);
+                MainActivity.checked = false;
+                checked = false;
             }
         }
 
     }
     /**
-     * Diese Klasse wird dafür verwendet, alle Artikel die derzeit in der Datenbank als verfügbar angelegt sind in die Applikation zu laden.
+     * Diese Klasse wird dafür verwendet, alle Artikel die derzeit in der Datenbank als verfügbar
+     * angelegt sind in die Applikation zu laden.
+     * Ebenfalls wird folgendens Überprüft:
+     *  - befinden sich "Artikel" in der Datenbank
+     *  - besteht Kontakt zur Datenbank
+     *  - kommt es zu Verbindungsfehlern innerhalb des Netzwerks
      */
     private class GetAllItems extends AsyncTask<Void, Void, ArrayList<Item>>{
 
@@ -315,15 +338,23 @@ public class TableSelectionFragment extends Fragment {
         }
     }
     /**
-     * Diese Klasse wird dafür verwendet, alle Bestellungen die derzeit in der Datenbank angelegt sind in die Applikation zu laden.
+     * Diese Klasse wird dafür verwendet, alle Bestellungen die derzeit in der Datenbank angelegt
+     * sind in die Applikation zu laden.
+     * Ebenfalls wird folgendens Überprüft:
+     *  - befinden sich "Bestellungen" in der Datenbank
+     *  - besteht Kontakt zur Datenbank
+     *  - kommt es zu Verbindungsfehlern innerhalb des Netzwerks
      */
     private class GetAllOrders extends AsyncTask<Void,Void,ArrayList<Order>> {
 
         /**
-         * Diese Methode wird dafür verwendet alle Bestellungen der Datenbank zu erhalten. Die Bestellungen werden in der MainActivity gepseichert.
+         * Diese Methode wird dafür verwendet alle Bestellungen der Datenbank zu erhalten.
+         * Die Bestellungen werden in der MainActivity gepseichert.
          *
-         * @param params welche Datentypen die Informationen haben, die im Hintergrund bearbeitet werden sollen.
-         * @return null, alle Informationen die vom Server übermittelt wurden werden in der MainActivity gespeichert.
+         * @param params welche Datentypen die Informationen haben, die im Hintergrund bearbeitet
+         *               werden sollen.
+         * @return null, alle Informationen die vom Server übermittelt wurden werden in der
+         *               MainActivity gespeichert.
          */
         @Override
         protected ArrayList<Order> doInBackground(Void... params) {
@@ -360,8 +391,10 @@ public class TableSelectionFragment extends Fragment {
         }
 
         /**
-         *  Falls bei der Kommunikation mit dem Server ein Fehler auftritt, wird mithilfe der ShowToast-Methode dieser Fehler dargestellt.
+         *  Falls bei der Kommunikation mit dem Server ein Fehler auftritt, wird mithilfe der
+         *  ShowToast-Methode dieser Fehler dargestellt.
          *  Speichert die Bestellungen in der MainActivity.
+         *
          * @param orders alle Bestellungen die in der Datenbank hinterlegt sind
          */
         protected void onPostExecute( ArrayList<Order> orders) {
@@ -378,9 +411,22 @@ public class TableSelectionFragment extends Fragment {
 
         }
     }
-
+    /**
+     * Diese Klasse wird dafür verwendet, eine neue Bestellung in der Datenbank zu erstellen.
+     * Dabei wird der Bestellung der Tisch angefügt, an welcher die Bestellung stattfindet.
+     *
+     * Ebenfalls wird folgendens Überprüft:
+     *  - besteht Kontakt zur Datenbank
+     *  - kommt es zu Verbindungsfehlern innerhalb des Netzwerks
+     */
     private class CreatNewOrder extends AsyncTask<Void, Void, Void> {
 
+        /**
+         * Diese Methode wird dafür verwendet die Bestellung an die Datenbank zu übertragen.
+         * @param params welche Datentypen die Informationen haben, die im Hintergrund bearbeitet
+         *               werden sollen.
+         * @return null, Informationen werden an den Server geschickt.
+         */
         @Override
         protected Void doInBackground(Void... params) {
 
@@ -416,6 +462,12 @@ public class TableSelectionFragment extends Fragment {
             return null;
         }
 
+        /**
+         * Falls bei der Kommunikation mit dem Server ein Fehler auftritt, wird mithilfe der
+         * ShowToast-Methode dieser Fehler dargestellt.
+         *
+         * @param aVoid führt nichts aus, da keine Daten in die Applikation geladen werden.
+         */
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
@@ -428,9 +480,26 @@ public class TableSelectionFragment extends Fragment {
 
         }
     }
-
+    /**
+     * Diese Klasse wird dafür verwendet, alle Bestellten Artikel - zu einem bestimmten Tisch -
+     * die derzeit in der Datenbank angelegt sind in die Applikation zu laden.
+     * Ebenfalls wird folgendens Überprüft:
+     *  - befinden sich "Bestellte Artikel" in der Datenbank
+     *  - besteht Kontakt zur Datenbank
+     *  - kommt es zu Verbindungsfehlern innerhalb des Netzwerks
+     */
     private class GetOrderedItems extends AsyncTask<Void,Void,ArrayList<OrderedItem>> {
 
+        /**
+         * Diese Methode wird dafür verwendet alle Bestellten Artikel - eines Tisches -
+         * der Datenbank zu erhalten.
+         * Die Bestellten Artikel werden in der MainActivity gepseichert.
+         *
+         * @param params welche Datentypen die Informationen haben, die im Hintergrund bearbeitet
+         *               werden sollen.
+         * @return null, alle Informationen die vom Server übermittelt wurden werden in der
+         *               MainActivity gespeichert.
+         */
         @Override
         protected ArrayList<OrderedItem> doInBackground(Void... params) {
 
@@ -466,11 +535,21 @@ public class TableSelectionFragment extends Fragment {
             }
         }
 
+        /**
+         * Falls bei der Kommunikation mit dem Server ein Fehler auftritt, wird mithilfe der
+         * ShowToast-Methode dieser Fehler dargestellt.
+         * Speichert die bestellten Artikel in der MainActivity.
+         *
+         * @param orderedItems alle Bestellten Artikel die in der Datenbank hinterlegt sind.
+         */
         protected void onPostExecute( ArrayList<OrderedItem> orderedItems) {
             super.onPostExecute(orderedItems);
 
             if (orderedItems != null) {
                 MainActivity.orderedItems = orderedItems;
+                for (int i = 0; i< MainActivity.orderedItems.size();i++){
+                    MainActivity.startOrderedItems.add(MainActivity.orderedItems.get(i));
+                }
             }
 
             if(text != null){
@@ -483,9 +562,24 @@ public class TableSelectionFragment extends Fragment {
 
         }
     }
-
+    /**
+     * Diese Klasse wird dafür verwendet, alle unproduzierten Artikel die derzeit in der Datenbank
+     * angelegt sind in die Applikation zu laden.
+     * Ebenfalls wird folgendens Überprüft:
+     *  - befinden sich "unproduzierte Artikel" in der Datenbank
+     *  - besteht Kontakt zur Datenbank
+     *  - kommt es zu Verbindungsfehlern innerhalb des Netzwerks
+     */
     private class GetAllUnproducedItems extends AsyncTask<Void,Void,ArrayList<OrderedItem>> {
 
+        /**
+         * Diese Methode wird dafür verwendet alle unproduzierten Artikel der Datenbank zu erhalten.
+         * Die unproduzierten Artikel werden in der MainActivity gepseichert.
+         * @param params welche Datentypen die Informationen haben, die im Hintergrund bearbeitet
+         *               werden sollen.
+         * @return null, alle Informationen die vom Server übermittelt wurden werden in der
+         *               MainActivity gespeichert.
+         */
         @Override
         protected ArrayList<OrderedItem> doInBackground(Void... params) {
 
@@ -522,6 +616,13 @@ public class TableSelectionFragment extends Fragment {
             }
         }
 
+        /**
+         * Falls bei der Kommunikation mit dem Server ein Fehler auftritt, wird mithilfe der
+         * ShowToast-Methode dieser Fehler dargestellt.
+         * Speichert die unproduzierten Artikel in der MainActivity.
+         *
+         * @param orderedItems alle unproduzierten Artikel die in der Datenbank hinterlegt sind.
+         */
         @Override
         protected void onPostExecute( ArrayList<OrderedItem> orderedItems) {
             super.onPostExecute(orderedItems);
@@ -535,7 +636,6 @@ public class TableSelectionFragment extends Fragment {
         }
 
     }
-
     /**
      * Überprüft ob eine noch nicht bezahlte Rechnung an dem übergebenen Tisch existiert.
      * Falls eine nicht bezahlte Bestellung existiert, werden die Artikel der Bestellung in der MainActivity gespeichert.
@@ -584,15 +684,15 @@ public class TableSelectionFragment extends Fragment {
             System.out.println(text);
         }
     }
-
+    /**
+     * Mithilfe dieser Methode wird die Java-Klasse ItemSelectFragment aufgerufen und die
+     * Java-Klasse TableSelectionFragment wird nicht mehr dargestellt.
+     */
     private void showItemFragment(){
         ItemSelectFragment fragment = new ItemSelectFragment();
         FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.frame, fragment, "fragment1");
         fragmentTransaction.commit();
     }
-
-
-
 
 }

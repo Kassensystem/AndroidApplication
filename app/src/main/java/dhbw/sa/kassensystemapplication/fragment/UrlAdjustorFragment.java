@@ -15,13 +15,26 @@ import android.widget.TextView;
 import dhbw.sa.kassensystemapplication.MainActivity;
 import dhbw.sa.kassensystemapplication.R;
 
-
+/**
+ * In dieser Klasse wird der Bildschirm zur IP-Adressen-Auswahl der Applikation erstellt.
+ * Dieser wird ebenfalls aufgerufen, wenn angefangen wird eine Bestellung aufzugeben.
+ * @author Daniel Schifano
+ */
 public class UrlAdjustorFragment extends Fragment {
 
+    /**
+     * Nodes, in denen die Informationen für den Anwendern dargestellt werden, beziehungsweise die
+     * sie verwenden können.
+     */
     private Button confirmURL;
     private EditText editTextURL;
     private TextView textView;
 
+    /**
+     * Der Konstruktor, der zum aufrufen dieser Klasse benötigt wird.
+     * Er benötigt keine Übergabe Parameter.
+     * Damit wird der neue Bildschirm initalisiert und kann auf dem Smartphone angezeigt werden.
+     */
     public UrlAdjustorFragment() {
 
     }
